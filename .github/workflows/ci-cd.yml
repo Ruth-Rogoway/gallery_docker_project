@@ -11,6 +11,8 @@ env:
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+# ... קוד קיים ...
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -19,57 +21,47 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
+    - name: Set up Docker Buildx # עדיין נחוץ למקרה שנצטרך להשתמש ב-Buildx בהמשך
       uses: docker/setup-buildx-action@v3
 
-    - name: Build database service
-      uses: docker/build-push-action@v5
-      with:
-        context: ./sqlite-db
-        tags: gallery-db:test
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+    # נבטל את כל שלבי ה-build הבודדים האלה
+    # - name: Build database service
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./sqlite-db
+    #     tags: gallery-db:test
+    #     cache-from: type=gha
+    #     cache-to: type=gha,mode=max
+    #
+    # - name: Build Rust app service
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./gallery_server_rust-main
+    #     tags: gallery-rust:test
+    #     cache-from: type=gha
+    #     cache-to: type=gha,mode=max
+    #
+    # - name: Build Nginx service
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./nginx
+    #     tags: gallery-nginx:test
+    #     cache-from: type=gha
+    #     cache-to: type=gha,mode=max
+    #
+    # - name: Build Frontend service
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./gallery_app_react-main
+    #     tags: gallery-frontend:test
+    #     cache-from: type=gha
+    #     cache-to: type=gha,mode=max
 
-    - name: Build Rust app service
-      uses: docker/build-push-action@v5
-      with:
-        context: ./gallery_server_rust-main
-        tags: gallery-rust:test
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+    - name: Build all services with Docker Compose
+      run: docker-compose build
 
-    - name: Build Nginx service
-      uses: docker/build-push-action@v5
-      with:
-        context: ./nginx
-        tags: gallery-nginx:test
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: Build Frontend service
-      uses: docker/build-push-action@v5
-      with:
-        context: ./gallery_app_react-main
-        tags: gallery-frontend:test
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: Create network
-      run: docker network create gallery-network
-
-    - name: Start database
-      run: |
-        docker run -d --name gallery-db \
-          --network gallery-network \
-          -v db_data:/data \
-          gallery-db:test
-        docker run -d --name gallery-rust-app \
-          --network gallery-network \
-          -v db_data:/data \
-          -e DATABASE_URL=sqlite:/data/mydb.db \
-          -e PORT=3007 \
-          -p 3007:3007 \
-          gallery-rust:test
+    - name: Start services with Docker Compose
+      run: docker-compose up -d
 
     - name: Wait for services to be ready
       run: |
@@ -108,7 +100,7 @@ jobs:
         echo ""
 
         # Test 3: Get customers in Jerusalem
-        echo "3️⃣ Getting customers in Jerusalem..."
+        echo "3️⃣ Getting customers in Jerusalem...committees
         curl -s http://localhost:3007/customers/jerusalem | jq '.' || curl -s http://localhost:3007/customers/jerusalem
         echo ""
 
@@ -143,6 +135,11 @@ jobs:
           echo "Tests failed! ❌"
           exit 1
         fi
+
+    - name: Stop services with Docker Compose (cleanup)
+      if: always() # ירוץ תמיד, גם אם שלבים קודמים נכשלו
+      run: docker-compose down
+
 
   deploy:
     needs: test
