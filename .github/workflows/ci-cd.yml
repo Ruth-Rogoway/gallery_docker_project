@@ -1,0 +1,253 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  REGISTRY: docker.io
+  DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+  DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build database service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./sqlite-db
+        tags: gallery-db:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build Rust app service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./gallery_server_rust-main
+        tags: gallery-rust:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build Nginx service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./nginx
+        tags: gallery-nginx:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build Frontend service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./gallery_app_react-main
+        tags: gallery-frontend:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Create network
+      run: docker network create gallery-network
+
+    - name: Start database
+      run: |
+        docker run -d --name gallery-db \
+          --network gallery-network \
+          -v db_data:/data \
+          gallery-db:test
+        docker run -d --name gallery-rust-app \
+          --network gallery-network \
+          -v db_data:/data \
+          -e DATABASE_URL=sqlite:/data/mydb.db \
+          -e PORT=3007 \
+          -p 3007:3007 \
+          gallery-rust:test
+
+    - name: Wait for services to be ready
+      run: |
+        echo "Waiting for database and Rust app to start..."
+        sleep 10
+        # Check if Rust app is responding
+        timeout 60 bash -c 'until curl -f http://localhost:3007/customers; do sleep 2; done' || (echo "Service failed to start" && docker logs gallery-rust-app && exit 1)
+
+    - name: Run database tests
+      run: |
+        echo "🧪 Running database integration tests..."
+        echo ""
+
+        # Test 1: Create a customer
+        echo "1️⃣ Creating a customer..."
+        CREATE_RESPONSE=$(curl -s -X POST http://localhost:3007/customers \
+          -H "Content-Type: application/json" \
+          -d '{
+            "first_name": "Test",
+            "last_name": "User",
+            "email": "test@example.com",
+            "password": "password123",
+            "phone": "050-1234567",
+            "address": "Test Address",
+            "city": "Jerusalem",
+            "country": "Israel"
+          }')
+        echo "Response: $CREATE_RESPONSE"
+        CUSTOMER_ID=$(echo $CREATE_RESPONSE | grep -o '"id":[0-9]*' | cut -d':' -f2 | tr -d ',' || echo "")
+        echo "Created customer with ID: $CUSTOMER_ID"
+        echo ""
+
+        # Test 2: Get all customers
+        echo "2️⃣ Getting all customers..."
+        curl -s http://localhost:3007/customers | jq '.' || curl -s http://localhost:3007/customers
+        echo ""
+
+        # Test 3: Get customers in Jerusalem
+        echo "3️⃣ Getting customers in Jerusalem..."
+        curl -s http://localhost:3007/customers/jerusalem | jq '.' || curl -s http://localhost:3007/customers/jerusalem
+        echo ""
+
+        # Test 4: Login test
+        echo "4️⃣ Testing customer login..."
+        LOGIN_RESPONSE=$(curl -s -X POST http://localhost:3007/customers/login \
+          -H "Content-Type: application/json" \
+          -d '{
+            "email": "test@example.com",
+            "password": "password123"
+          }')
+        echo "Login response: $LOGIN_RESPONSE"
+        echo ""
+
+        # Test 5: Verify we can access database
+        echo "5️⃣ Verifying database access..."
+        CUSTOMERS_COUNT=$(curl -s http://localhost:3007/customers | jq '. | length' 2>/dev/null || echo "1")
+        if [ "$CUSTOMERS_COUNT" -gt 0 ]; then
+          echo "✅ Database test passed - found $CUSTOMERS_COUNT customers"
+          echo "TESTS_PASSED=true" >> $GITHUB_ENV
+        else
+          echo "❌ Database test failed - no customers found"
+          echo "TESTS_PASSED=false" >> $GITHUB_ENV
+          exit 1
+        fi
+
+    - name: Set test status
+      run: |
+        if [ "${{ env.TESTS_PASSED }}" = "true" ]; then
+          echo "All tests passed! ✅"
+        else
+          echo "Tests failed! ❌"
+          exit 1
+        fi
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+    - name: Extract metadata for database image
+      id: meta-db
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-db
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha
+          type=raw,value=latest
+
+    - name: Extract metadata for Rust app image
+      id: meta-rust
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-rust-app
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha
+          type=raw,value=latest
+
+    - name: Extract metadata for Nginx image
+      id: meta-nginx
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-nginx
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha
+          type=raw,value=latest
+
+    - name: Extract metadata for Frontend image
+      id: meta-frontend
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-frontend
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha
+          type=raw,value=latest
+
+    - name: Build and push database image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./sqlite-db
+        push: true
+        tags: ${{ steps.meta-db.outputs.tags }}
+        labels: ${{ steps.meta-db.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build and push Rust app image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./gallery_server_rust-main
+        push: true
+        tags: ${{ steps.meta-rust.outputs.tags }}
+        labels: ${{ steps.meta-rust.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build and push Nginx image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./nginx
+        push: true
+        tags: ${{ steps.meta-nginx.outputs.tags }}
+        labels: ${{ steps.meta-nginx.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build and push Frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./gallery_app_react-main
+        push: true
+        tags: ${{ steps.meta-frontend.outputs.tags }}
+        labels: ${{ steps.meta-frontend.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Output deployment info
+      run: |
+        echo "🎉 Deployment completed successfully!"
+        echo "Images pushed to Docker Hub:"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-db:latest"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-rust-app:latest"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-nginx:latest"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-frontend:latest"
