@@ -65,17 +65,22 @@ jobs:
     - name: Build all services with Docker Compose
       run: docker-compose build
 
-    - name: Start services with Docker Compose
+     - name: Start services with Docker Compose
       run: docker-compose up -d
+
+    - name: Wait for initial container startup (briefly)
+      run: sleep 5 # תן לקונטיינרים רגע לעלות לפני שננסה לבצע docker exec
+
+    - name: Ensure database volume has write permissions for Rust app
+      # הפקודה הזו מופעלת בתוך הקונטיינר rust-app-1 ומשנה את הרשאות התיקייה /data
+      run: docker exec rust-app-1 chmod -R 777 /data
 
     - name: Wait for services to be ready
       run: |
         echo "Waiting for database and Rust app to start..."
-        sleep 30 # הגדלנו את זמן ההמתנה הראשוני ל-30 שניות
+        sleep 30 # זמן ההמתנה הראשוני
         # Check if Rust app is responding
-        # הגדלנו את ה-timeout ל-120 שניות ותיקנו את שם הקונטיינר ל-rust-app-1
         timeout 120 bash -c 'until curl -f http://localhost:3007/customers; do sleep 2; done' || (echo "Service failed to start" && docker logs rust-app-1 && exit 1)
-
     - name: Run database tests
       run: |
         echo "🧪 Running database integration tests..."
