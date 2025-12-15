@@ -2,6 +2,8 @@
 
 פרויקט גלריה מלא עם Rust backend, React frontend, ו-Docker containers.
 
+#test
+
 ## מבנה הפרויקט
 
 - **gallery_server_rust-main/** - שרת Rust עם API
