@@ -71,9 +71,10 @@ jobs:
     - name: Wait for services to be ready
       run: |
         echo "Waiting for database and Rust app to start..."
-        sleep 10
+        sleep 30 # הגדלנו את זמן ההמתנה הראשוני ל-30 שניות
         # Check if Rust app is responding
-        timeout 60 bash -c 'until curl -f http://localhost:3007/customers; do sleep 2; done' || (echo "Service failed to start" && docker logs gallery-rust-app && exit 1)
+        # הגדלנו את ה-timeout ל-120 שניות ותיקנו את שם הקונטיינר ל-rust-app-1
+        timeout 120 bash -c 'until curl -f http://localhost:3007/customers; do sleep 2; done' || (echo "Service failed to start" && docker logs rust-app-1 && exit 1)
 
     - name: Run database tests
       run: |
