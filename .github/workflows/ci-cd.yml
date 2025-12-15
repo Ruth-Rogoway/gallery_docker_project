@@ -21,8 +21,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx # עדיין נחוץ למקרה שנצטרך להשתמש ב-Buildx בהמשך
+     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - name: Install Docker Compose
       run: |
