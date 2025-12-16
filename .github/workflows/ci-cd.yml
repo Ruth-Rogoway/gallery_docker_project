@@ -25,13 +25,73 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - name: Install Docker Compose
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker-compose
+    - name: Extract metadata for database image (for test)
+      id: meta-db-test
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-db
+        tags: |
+          type=raw,value=test
+    - name: Build database image (for test)
+      uses: docker/build-push-action@v5
+      with:
+        context: ./sqlite-db
+        push: false
+        tags: ${{ steps.meta-db-test.outputs.tags }}
+        labels: ${{ steps.meta-db-test.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
-    - name: Build all services with Docker Compose
-      run: docker-compose build
+    - name: Extract metadata for Rust app image (for test)
+      id: meta-rust-test
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-rust-app
+        tags: |
+          type=raw,value=test
+    - name: Build Rust app image (for test)
+      uses: docker/build-push-action@v5
+      with:
+        context: ./gallery_server_rust-main
+        push: false
+        tags: ${{ steps.meta-rust-test.outputs.tags }}
+        labels: ${{ steps.meta-rust-test.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Extract metadata for Nginx image (for test)
+      id: meta-nginx-test
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-nginx
+        tags: |
+          type=raw,value=test
+    - name: Build Nginx image (for test)
+      uses: docker/build-push-action@v5
+      with:
+        context: ./nginx
+        push: false
+        tags: ${{ steps.meta-nginx-test.outputs.tags }}
+        labels: ${{ steps.meta-nginx-test.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Extract metadata for Frontend image (for test)
+      id: meta-frontend-test
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-frontend
+        tags: |
+          type=raw,value=test
+    - name: Build Frontend image (for test)
+      uses: docker/build-push-action@v5
+      with:
+        context: ./gallery_app_react-main
+        push: false
+        tags: ${{ steps.meta-frontend-test.outputs.tags }}
+        labels: ${{ steps.meta-frontend-test.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - name: Start services with Docker Compose
       run: docker-compose up -d
@@ -42,7 +102,7 @@ jobs:
     - name: Wait for services to be ready
       run: |
         echo "Waiting for database and Rust app to start..."
-        sleep 30 # זמן ההמתנה הראשוני
+        sleep 5 # זמן ההמתנה הראשוני
         # Check if Rust app is responding
         timeout 120 bash -c 'until docker exec rust-app-1 curl -f http://rust-app-1:3007/customers; do sleep 2; done' || (echo "Service failed to start" && docker logs rust-app-1 && exit 1)
     - name: Run database tests
