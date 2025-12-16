@@ -117,7 +117,7 @@ jobs:
 
         # Test 1: Create a customer
         echo "1️⃣ Creating a customer..."
-        CREATE_RESPONSE=$(docker exec rust-app-1 curl -s -X POST http://localhost:3007/customers \
+        CREATE_RESPONSE=$(docker exec rust-app-1 curl -i -s -X POST http://localhost:3007/customers \
           -H "Content-Type: application/json" \
           -d '{
             "first_name": "Test",
@@ -127,7 +127,10 @@ jobs:
             "address": "Test Address ירושלים"
           }')
         echo "Response: $CREATE_RESPONSE"
-        CUSTOMER_ID=$(echo $CREATE_RESPONSE | grep -o '"id":[0-9]*' | cut -d':' -f2 | tr -d ',' || echo "")
+        echo "---- BODY ----"
+        echo "$CREATE_RESPONSE" | tail -n +2
+        echo "---- END BODY ----"
+        CUSTOMER_ID=$(echo $CREATE_RESPONSE | grep -o '"customer_id":"[^"]*"' | cut -d':' -f2 | tr -d '"' || echo "")
         echo "Created customer with ID: $CUSTOMER_ID"
         echo ""
 
@@ -137,7 +140,7 @@ jobs:
         echo ""
 
         # Test 3: Get customers in Jerusalem
-        echo "3️⃣ Getting customers in Jerusalem...committees
+        echo "3️⃣ Getting customers in Jerusalem...committees"
         docker exec rust-app-1 curl -s http://localhost:3007/customers/address/jerusalem | jq '.' || docker exec rust-app-1 curl -s http://localhost:3007/customers/address/jerusalem
         echo ""
 
