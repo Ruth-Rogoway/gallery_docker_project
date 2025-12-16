@@ -109,7 +109,7 @@ jobs:
         echo "Waiting for database and Rust app to start..."
         sleep 5 # זמן ההמתנה הראשוני
         # Check if Rust app is responding
-        timeout 120 bash -c 'until docker exec rust-app-1 curl -f http://rust-app-1:3007/customers; do sleep 2; done' || (echo "Service failed to start" && docker logs rust-app-1 && exit 1)
+        timeout 120 bash -c 'until docker exec rust-app-1 curl -f http://localhost:3007/customers; do sleep 2; done' || (echo "Service failed to start" && docker logs rust-app-1 && exit 1)
     - name: Run database tests
       run: |
         echo "🧪 Running database integration tests..."
@@ -117,7 +117,7 @@ jobs:
 
         # Test 1: Create a customer
         echo "1️⃣ Creating a customer..."
-        CREATE_RESPONSE=$(docker exec rust-app-1 curl -s -X POST http://rust-app-1:3007/customers \
+        CREATE_RESPONSE=$(docker exec rust-app-1 curl -s -X POST http://localhost:3007/customers \
           -H "Content-Type: application/json" \
           -d '{
             "first_name": "Test",
@@ -136,17 +136,17 @@ jobs:
 
         # Test 2: Get all customers
         echo "2️⃣ Getting all customers..."
-        docker exec rust-app-1 curl -s http://rust-app-1:3007/customers | jq '.' || docker exec rust-app-1 curl -s http://rust-app-1:3007/customers
+        docker exec rust-app-1 curl -s http://localhost:3007/customers | jq '.' || docker exec rust-app-1 curl -s http://localhost:3007/customers
         echo ""
 
         # Test 3: Get customers in Jerusalem
         echo "3️⃣ Getting customers in Jerusalem...committees
-        docker exec rust-app-1 curl -s http://rust-app-1:3007/customers/jerusalem | jq '.' || docker exec rust-app-1 curl -s http://rust-app-1:3007/customers/jerusalem
+        docker exec rust-app-1 curl -s http://localhost:3007/customers/jerusalem | jq '.' || docker exec rust-app-1 curl -s http://localhost:3007/customers/jerusalem
         echo ""
 
         # Test 4: Login test
         echo "4️⃣ Testing customer login..."
-        LOGIN_RESPONSE=$(docker exec rust-app-1 curl -s -X POST http://rust-app-1:3007/customers/login \
+        LOGIN_RESPONSE=$(docker exec rust-app-1 curl -s -X POST http://localhost:3007/customers/login \
           -H "Content-Type: application/json" \
           -d '{
             "email": "test@example.com",
@@ -157,7 +157,7 @@ jobs:
 
         # Test 5: Verify we can access database
         echo "5️⃣ Verifying database access..."
-        CUSTOMERS_COUNT=$(docker exec rust-app-1 curl -s http://rust-app-1:3007/customers | jq '. | length' 2>/dev/null || echo "1")
+        CUSTOMERS_COUNT=$(docker exec rust-app-1 curl -s http://localhost:3007/customers | jq '. | length' 2>/dev/null || echo "1")
         if [ "$CUSTOMERS_COUNT" -gt 0 ]; then
           echo "✅ Database test passed - found $CUSTOMERS_COUNT customers"
           echo "TESTS_PASSED=true" >> $GITHUB_ENV
