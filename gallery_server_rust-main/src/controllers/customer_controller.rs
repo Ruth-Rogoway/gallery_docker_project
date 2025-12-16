@@ -58,8 +58,7 @@ pub async fn get_customers_in_jerusalem(pool: web::Data<SqlitePool>) -> impl Res
 }
 
 #[post("/")]
-pub async fn create_customer(pool: web::Data<SqlitePool>, customer: web::Json<Customer>) -> impl Responder {
-
+pub async fn create_customer(pool: web::Data<SqlitePool>, customer: web::Json<crate::models::customer::NewCustomer>) -> impl Responder {
     let id =Uuid::new_v4().to_string();
     match sqlx::query("INSERT INTO CUSTOMERS (customer_id, first_name, last_name, email, phone, address) VALUES (?, ?, ?, ?, ?, ?)")
         .bind(&id)
@@ -72,7 +71,7 @@ pub async fn create_customer(pool: web::Data<SqlitePool>, customer: web::Json<Cu
         .await
     {
         Ok(_result) => {
-            let new_customer = Customer {
+            let new_customer = crate::models::customer::Customer {
                customer_id: id,
                first_name: customer.first_name.clone(),
                last_name: customer.last_name.clone(),
