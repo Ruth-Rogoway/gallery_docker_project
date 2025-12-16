@@ -68,15 +68,12 @@ jobs:
     - name: Build all services with Docker Compose
       run: docker-compose build
 
-     - name: Start services with Docker Compose
+    - name: Start services with Docker Compose
       run: docker-compose up -d
 
     - name: Wait for initial container startup (briefly)
       run: sleep 5 # תן לקונטיינרים רגע לעלות לפני שננסה לבצע docker exec
 
-    - name: Ensure database volume has write permissions for Rust app
-      # הפקודה הזו מופעלת בתוך הקונטיינר rust-app-1 ומשנה את הרשאות התיקייה /data
-      run: docker exec rust-app-1 chmod -R 777 /data
 
     - name: Wait for services to be ready
       run: |
