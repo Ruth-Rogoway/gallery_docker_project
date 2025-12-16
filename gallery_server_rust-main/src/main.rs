@@ -27,6 +27,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .app_data(web::Data::new(pool.clone()))
+            .route("/", web::get().to(|| async { "Gallery API Server is running!" }))
             .service(customer_routes())
             .service(artist_routes())
             .service(artworks_routes())

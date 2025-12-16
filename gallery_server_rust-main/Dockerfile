@@ -31,5 +31,8 @@ RUN mkdir -p /data
 # Expose port
 EXPOSE 3007
 
+# Make sure the binary exists and is executable
+RUN ls -la /app/ && test -f /app/app && chmod +x /app/app
+
 # Set the binary as entrypoint
 CMD ["./app"]

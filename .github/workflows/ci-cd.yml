@@ -11,6 +11,8 @@ env:
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+# ... קוד קיים ...
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -25,91 +27,63 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - name: Extract metadata for database image (for test)
-      id: meta-db-test
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-db
-        tags: |
-          type=raw,value=test
-    - name: Build database image (for test)
-      uses: docker/build-push-action@v5
-      with:
-        context: ./sqlite-db
-        push: false
-        tags: ${{ steps.meta-db-test.outputs.tags }}
-        labels: ${{ steps.meta-db-test.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: Extract metadata for Rust app image (for test)
-      id: meta-rust-test
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-rust-app
-        tags: |
-          type=raw,value=test
-    - name: Build Rust app image (for test)
-      uses: docker/build-push-action@v5
-      with:
-        context: ./gallery_server_rust-main
-        push: false
-        tags: ${{ steps.meta-rust-test.outputs.tags }}
-        labels: ${{ steps.meta-rust-test.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: Extract metadata for Nginx image (for test)
-      id: meta-nginx-test
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-nginx
-        tags: |
-          type=raw,value=test
-    - name: Build Nginx image (for test)
-      uses: docker/build-push-action@v5
-      with:
-        context: ./nginx
-        push: false
-        tags: ${{ steps.meta-nginx-test.outputs.tags }}
-        labels: ${{ steps.meta-nginx-test.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: Extract metadata for Frontend image (for test)
-      id: meta-frontend-test
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-frontend
-        tags: |
-          type=raw,value=test
-    - name: Build Frontend image (for test)
-      uses: docker/build-push-action@v5
-      with:
-        context: ./gallery_app_react-main
-        push: false
-        tags: ${{ steps.meta-frontend-test.outputs.tags }}
-        labels: ${{ steps.meta-frontend-test.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
     - name: Install Docker Compose
       run: |
         sudo apt-get update
         sudo apt-get install -y docker-compose
 
+    # נבטל את כל שלבי ה-build הבודדים האלה
+    # - name: Build database service
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./sqlite-db
+    #     tags: gallery-db:test
+    #     cache-from: type=gha
+    #     cache-to: type=gha,mode=max
+    #
+    # - name: Build Rust app service
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./gallery_server_rust-main
+    #     tags: gallery-rust:test
+    #     cache-from: type=gha
+    #     cache-to: type=gha,mode=max
+    #
+    # - name: Build Nginx service
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./nginx
+    #     tags: gallery-nginx:test
+    #     cache-from: type=gha
+    #     cache-to: type=gha,mode=max
+    #
+    # - name: Build Frontend service
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./gallery_app_react-main
+    #     tags: gallery-frontend:test
+    #     cache-from: type=gha
+    #     cache-to: type=gha,mode=max
+
+    - name: Build all services with Docker Compose
+      run: docker-compose build
+
     - name: Start services with Docker Compose
       run: docker-compose up -d
 
     - name: Wait for initial container startup (briefly)
-      run: sleep 15 # תן לקונטיינרים רגע לעלות לפני שננסה לבצע docker exec
+      run: sleep 5 # תן לקונטיינרים רגע לעלות לפני שננסה לבצע docker exec
+
+    - name: Ensure database volume has write permissions for Rust app
+      # הפקודה הזו מופעלת בתוך הקונטיינר rust-app-1 ומשנה את הרשאות התיקייה /data
+      run: docker exec rust-app-1 chmod -R 777 /data
 
     - name: Wait for services to be ready
       run: |
         echo "Waiting for database and Rust app to start..."
-        sleep 15 # זמן ההמתנה הראשוני
+        sleep 30 # זמן ההמתנה הראשוני
         # Check if Rust app is responding
-        timeout 120 bash -c 'until docker exec rust-app-1 curl -f http://localhost:3007/customers/; do sleep 2; done' || (echo "Service failed to start" && docker logs rust-app-1 && exit 1)
+        timeout 120 bash -c 'until curl -f http://localhost:3007/customers; do sleep 2; done' || (echo "Service failed to start" && docker logs rust-app-1 && exit 1)
     - name: Run database tests
       run: |
         echo "🧪 Running database integration tests..."
@@ -117,42 +91,42 @@ jobs:
 
         # Test 1: Create a customer
         echo "1️⃣ Creating a customer..."
-        CREATE_RESPONSE=$(docker exec rust-app-1 curl -i -s -X POST http://localhost:3007/customers \
+        CREATE_RESPONSE=$(curl -s -X POST http://localhost:3007/customers \
           -H "Content-Type: application/json" \
           -d '{
             "first_name": "Test",
             "last_name": "User",
             "email": "test@example.com",
+            "password": "password123",
             "phone": "050-1234567",
-            "address": "Test Address ירושלים"
+            "address": "Test Address",
+            "city": "Jerusalem",
+            "country": "Israel"
           }')
         echo "Response: $CREATE_RESPONSE"
-        echo "---- BODY ----"
-        echo "$CREATE_RESPONSE" | tail -n +2
-        echo "---- END BODY ----"
-        CUSTOMER_ID=$(echo $CREATE_RESPONSE | grep -o '"customer_id":"[^"]*"' | cut -d':' -f2 | tr -d '"' || echo "")
+        CUSTOMER_ID=$(echo $CREATE_RESPONSE | grep -o '"id":[0-9]*' | cut -d':' -f2 | tr -d ',' || echo "")
         echo "Created customer with ID: $CUSTOMER_ID"
         echo ""
 
         # Test 2: Get all customers
         echo "2️⃣ Getting all customers..."
-        docker exec rust-app-1 curl -s http://localhost:3007/customers/ | jq '.' || docker exec rust-app-1 curl -s http://localhost:3007/customers/
+        curl -s http://localhost:3007/customers | jq '.' || curl -s http://localhost:3007/customers
         echo ""
 
         # Test 3: Get customers in Jerusalem
-        echo "3️⃣ Getting customers in Jerusalem...committees"
-        docker exec rust-app-1 curl -s http://localhost:3007/customers/address/jerusalem | jq '.' || docker exec rust-app-1 curl -s http://localhost:3007/customers/address/jerusalem
+        echo "3️⃣ Getting customers in Jerusalem..."
+        curl -s http://localhost:3007/customers/address/jerusalem | jq '.' || curl -s http://localhost:3007/customers/address/jerusalem
         echo ""
 
         # Test 4: Login test
         echo "4️⃣ Testing customer login..."
-        LOGIN_RESPONSE=$(docker exec rust-app-1 curl -s "http://localhost:3007/customers/login?email=test@example.com&password=password123")
+        LOGIN_RESPONSE=$(curl -s "http://localhost:3007/customers/login?email=test@example.com&password=password123")
         echo "Login response: $LOGIN_RESPONSE"
         echo ""
 
         # Test 5: Verify we can access database
         echo "5️⃣ Verifying database access..."
-        CUSTOMERS_COUNT=$(docker exec rust-app-1 curl -s http://localhost:3007/customers/ | jq '. | length' 2>/dev/null || echo "1")
+        CUSTOMERS_COUNT=$(curl -s http://localhost:3007/customers | jq '. | length' 2>/dev/null || echo "1")
         if [ "$CUSTOMERS_COUNT" -gt 0 ]; then
           echo "✅ Database test passed - found $CUSTOMERS_COUNT customers"
           echo "TESTS_PASSED=true" >> $GITHUB_ENV
@@ -278,4 +252,8 @@ jobs:
     - name: Output deployment info
       run: |
         echo "🎉 Deployment completed successfully!"
-        echo "Images pushed to Docker Hub:\"\r\n        echo \"- ${{ env.DOCKER_HUB_USERNAME }}/gallery-db:latest\"\r\n        echo \"- ${{ env.DOCKER_HUB_USERNAME }}/gallery-rust-app:latest\"\r\n        echo \"- ${{ env.DOCKER_HUB_USERNAME }}/gallery-nginx:latest\"\r\n        echo \"- ${{ env.DOCKER_HUB_USERNAME }}/gallery-frontend:latest"
+        echo "Images pushed to Docker Hub:"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-db:latest"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-rust-app:latest"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-nginx:latest"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-frontend:latest"
