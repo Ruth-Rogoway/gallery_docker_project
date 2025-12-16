@@ -11,8 +11,6 @@ env:
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-# ... קוד קיים ...
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -32,39 +30,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y docker-compose
 
-    # נבטל את כל שלבי ה-build הבודדים האלה
-    # - name: Build database service
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./sqlite-db
-    #     tags: gallery-db:test
-    #     cache-from: type=gha
-    #     cache-to: type=gha,mode=max
-    #
-    # - name: Build Rust app service
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./gallery_server_rust-main
-    #     tags: gallery-rust:test
-    #     cache-from: type=gha
-    #     cache-to: type=gha,mode=max
-    #
-    # - name: Build Nginx service
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./nginx
-    #     tags: gallery-nginx:test
-    #     cache-from: type=gha
-    #     cache-to: type=gha,mode=max
-    #
-    # - name: Build Frontend service
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./gallery_app_react-main
-    #     tags: gallery-frontend:test
-    #     cache-from: type=gha
-    #     cache-to: type=gha,mode=max
-
     - name: Build all services with Docker Compose
       run: docker-compose build
 
@@ -74,13 +39,12 @@ jobs:
     - name: Wait for initial container startup (briefly)
       run: sleep 5 # תן לקונטיינרים רגע לעלות לפני שננסה לבצע docker exec
 
-
     - name: Wait for services to be ready
       run: |
         echo "Waiting for database and Rust app to start..."
         sleep 30 # זמן ההמתנה הראשוני
         # Check if Rust app is responding
-        timeout 120 bash -c 'until curl -f http://rust-app-1:3007/customers; do sleep 2; done' || (echo "Service failed to start" && docker logs rust-app-1 && exit 1)
+        timeout 120 bash -c 'until docker exec rust-app-1 curl -f http://rust-app-1:3007/customers; do sleep 2; done' || (echo "Service failed to start" && docker logs rust-app-1 && exit 1)
     - name: Run database tests
       run: |
         echo "🧪 Running database integration tests..."
@@ -88,7 +52,7 @@ jobs:
 
         # Test 1: Create a customer
         echo "1️⃣ Creating a customer..."
-        CREATE_RESPONSE=$(curl -s -X POST http://rust-app-1:3007/customers \
+        CREATE_RESPONSE=$(docker exec rust-app-1 curl -s -X POST http://rust-app-1:3007/customers \
           -H "Content-Type: application/json" \
           -d '{
             "first_name": "Test",
@@ -107,17 +71,17 @@ jobs:
 
         # Test 2: Get all customers
         echo "2️⃣ Getting all customers..."
-        curl -s http://rust-app-1:3007/customers | jq '.' || curl -s http://rust-app-1:3007/customers
+        docker exec rust-app-1 curl -s http://rust-app-1:3007/customers | jq '.' || docker exec rust-app-1 curl -s http://rust-app-1:3007/customers
         echo ""
 
         # Test 3: Get customers in Jerusalem
         echo "3️⃣ Getting customers in Jerusalem...committees
-        curl -s http://rust-app-1:3007/customers/jerusalem | jq '.' || curl -s http://rust-app-1:3007/customers/jerusalem
+        docker exec rust-app-1 curl -s http://rust-app-1:3007/customers/jerusalem | jq '.' || docker exec rust-app-1 curl -s http://rust-app-1:3007/customers/jerusalem
         echo ""
 
         # Test 4: Login test
         echo "4️⃣ Testing customer login..."
-        LOGIN_RESPONSE=$(curl -s -X POST http://rust-app-1:3007/customers/login \
+        LOGIN_RESPONSE=$(docker exec rust-app-1 curl -s -X POST http://rust-app-1:3007/customers/login \
           -H "Content-Type: application/json" \
           -d '{
             "email": "test@example.com",
@@ -128,7 +92,7 @@ jobs:
 
         # Test 5: Verify we can access database
         echo "5️⃣ Verifying database access..."
-        CUSTOMERS_COUNT=$(curl -s http://rust-app-1:3007/customers | jq '. | length' 2>/dev/null || echo "1")
+        CUSTOMERS_COUNT=$(docker exec rust-app-1 curl -s http://rust-app-1:3007/customers | jq '. | length' 2>/dev/null || echo "1")
         if [ "$CUSTOMERS_COUNT" -gt 0 ]; then
           echo "✅ Database test passed - found $CUSTOMERS_COUNT customers"
           echo "TESTS_PASSED=true" >> $GITHUB_ENV
@@ -254,8 +218,4 @@ jobs:
     - name: Output deployment info
       run: |
         echo "🎉 Deployment completed successfully!"
-        echo "Images pushed to Docker Hub:"
-        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-db:latest"
-        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-rust-app:latest"
-        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-nginx:latest"
-        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-frontend:latest"
+        echo "Images pushed to Docker Hub:\"\r\n        echo \"- ${{ env.DOCKER_HUB_USERNAME }}/gallery-db:latest\"\r\n        echo \"- ${{ env.DOCKER_HUB_USERNAME }}/gallery-rust-app:latest\"\r\n        echo \"- ${{ env.DOCKER_HUB_USERNAME }}/gallery-nginx:latest\"\r\n        echo \"- ${{ env.DOCKER_HUB_USERNAME }}/gallery-frontend:latest"
