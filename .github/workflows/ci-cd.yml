@@ -37,7 +37,7 @@ jobs:
     #   uses: docker/build-push-action@v5
     #   with:
     #     context: ./sqlite-db
-    #     tags: gallery-db:test
+    #     tags: gallery_docker_project_db:test
     #     cache-from: type=gha
     #     cache-to: type=gha,mode=max
     #
@@ -53,7 +53,7 @@ jobs:
     #   uses: docker/build-push-action@v5
     #   with:
     #     context: ./nginx
-    #     tags: gallery-nginx:test
+    #     tags: gallery_docker_project_nginx:test
     #     cache-from: type=gha
     #     cache-to: type=gha,mode=max
     #
@@ -61,7 +61,7 @@ jobs:
     #   uses: docker/build-push-action@v5
     #   with:
     #     context: ./gallery_app_react-main
-    #     tags: gallery-frontend:test
+    #     tags: gallery_docker_project_frontend:test
     #     cache-from: type=gha
     #     cache-to: type=gha,mode=max
 
@@ -166,7 +166,7 @@ jobs:
       id: meta-db
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-db
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery_docker_project_db
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -177,7 +177,7 @@ jobs:
       id: meta-rust
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-rust-app
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery_docker_project
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -188,7 +188,7 @@ jobs:
       id: meta-nginx
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-nginx
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery_docker_project_nginx
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -199,7 +199,7 @@ jobs:
       id: meta-frontend
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery-frontend
+        images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/gallery_docker_project_frontend
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -250,7 +250,7 @@ jobs:
       run: |
         echo "🎉 Deployment completed successfully!"
         echo "Images pushed to Docker Hub:"
-        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-db:latest"
-        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-rust-app:latest"
-        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-nginx:latest"
-        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery-frontend:latest"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery_docker_project_db:latest"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery_docker_project:latest"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery_docker_project_nginx:latest"
+        echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery_docker_project_frontend:latest"
