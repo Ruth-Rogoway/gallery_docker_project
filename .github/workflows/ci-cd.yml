@@ -24,8 +24,6 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       with:
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Install Docker Compose
       run: |
@@ -38,33 +36,25 @@ jobs:
     #   with:
     #     context: ./sqlite-db
     #     tags: gallery_docker_project_db:test
-    #     cache-from: type=gha
-    #     cache-to: type=gha,mode=max
-    #
+    #         #         #
     # - name: Build Rust app service
     #   uses: docker/build-push-action@v5
     #   with:
     #     context: ./gallery_server_rust-main
     #     tags: gallery-rust:test
-    #     cache-from: type=gha
-    #     cache-to: type=gha,mode=max
-    #
+    #         #         #
     # - name: Build Nginx service
     #   uses: docker/build-push-action@v5
     #   with:
     #     context: ./nginx
     #     tags: gallery_docker_project_nginx:test
-    #     cache-from: type=gha
-    #     cache-to: type=gha,mode=max
-    #
+    #         #         #
     # - name: Build Frontend service
     #   uses: docker/build-push-action@v5
     #   with:
     #     context: ./gallery_app_react-main
     #     tags: gallery_docker_project_frontend:test
-    #     cache-from: type=gha
-    #     cache-to: type=gha,mode=max
-
+    #         #     
     - name: Build all services with Docker Compose
       run: docker-compose build
 
@@ -213,8 +203,6 @@ jobs:
         push: true
         tags: ${{ steps.meta-db.outputs.tags }}
         labels: ${{ steps.meta-db.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Build and push Rust app image
       uses: docker/build-push-action@v5
@@ -223,8 +211,6 @@ jobs:
         push: true
         tags: ${{ steps.meta-rust.outputs.tags }}
         labels: ${{ steps.meta-rust.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Build and push Nginx image
       uses: docker/build-push-action@v5
@@ -233,8 +219,6 @@ jobs:
         push: true
         tags: ${{ steps.meta-nginx.outputs.tags }}
         labels: ${{ steps.meta-nginx.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Build and push Frontend image
       uses: docker/build-push-action@v5
@@ -243,8 +227,6 @@ jobs:
         push: true
         tags: ${{ steps.meta-frontend.outputs.tags }}
         labels: ${{ steps.meta-frontend.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Output deployment info
       run: |
