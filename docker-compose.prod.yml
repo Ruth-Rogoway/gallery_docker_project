@@ -1,0 +1,73 @@
+services:
+  database:
+    image: ${DOCKER_HUB_USERNAME:-ruthrogoway}/gallery_docker_project_db:latest
+    container_name: gallery-db
+    volumes:
+      - db_data:/data
+    networks:
+      - gallery-network
+    restart: unless-stopped
+
+  rust-app-1:
+    image: ${DOCKER_HUB_USERNAME:-ruthrogoway}/gallery_docker_project:latest
+    container_name: rust-app-1
+    ports:
+      - "3007:3007"
+    environment:
+      - DATABASE_URL=sqlite:/data/mydb.db
+      - PORT=3007
+    volumes:
+      - db_data:/data
+    depends_on:
+      - database
+    networks:
+      - gallery-network
+    restart: unless-stopped
+
+  rust-app-2:
+    image: ${DOCKER_HUB_USERNAME:-ruthrogoway}/gallery_docker_project:latest
+    container_name: rust-app-2
+    ports:
+      - "3008:3008"
+    environment:
+      - DATABASE_URL=sqlite:/data/mydb.db
+      - PORT=3008
+    volumes:
+      - db_data:/data
+    depends_on:
+      - database
+    networks:
+      - gallery-network
+    restart: unless-stopped
+
+  nginx:
+    image: ${DOCKER_HUB_USERNAME:-ruthrogoway}/gallery_docker_project_nginx:latest
+    container_name: gallery-nginx
+    ports:
+      - "8080:8080"
+    depends_on:
+      - rust-app-1
+      - rust-app-2
+    networks:
+      - gallery-network
+    restart: unless-stopped
+
+  frontend:
+    image: ${DOCKER_HUB_USERNAME:-ruthrogoway}/gallery_docker_project_frontend:latest
+    container_name: gallery-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - nginx
+    networks:
+      - gallery-network
+    restart: unless-stopped
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  gallery-network:
+    driver: bridge
+
