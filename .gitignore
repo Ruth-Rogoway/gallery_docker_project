@@ -1,0 +1,40 @@
+# SSH Private Keys - NEVER commit these!
+*.pem
+*.key
+*.ppk
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.p12
+*.pfx
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Secrets and credentials
+secrets/
+*.secret
+credentials.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Database files (if local)
+*.db
+*.sqlite
+*.sqlite3
+

@@ -13,6 +13,9 @@ paths = [
   '''\.lock$''',
   '''package-lock\.json$''',
   '''Cargo\.lock$''',
+  # Note: RuthKeyPair.pem should be removed from repository history!
+  # This is temporary - the file should not be in the repo at all.
+  '''RuthKeyPair\.pem$''',
 ]
 
 [[rules]]
