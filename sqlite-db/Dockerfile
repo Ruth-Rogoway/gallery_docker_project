@@ -1,7 +1,7 @@
 FROM alpine:3.21
 
 # Create data directory, set permissions, and create database file
-RUN apk add --no-cache sqlite=3.47.2-r0 && \
+RUN apk add --no-cache sqlite && \
     mkdir -p /data && \
     chmod -R 777 /data && \
     touch /data/mydb.db
