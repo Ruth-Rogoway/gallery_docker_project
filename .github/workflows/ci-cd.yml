@@ -393,19 +393,21 @@ jobs:
           cd "$PROJECT_DIR"
 
           echo "Installing Docker Compose if needed..."
-          if ! command -v docker-compose &> /dev/null; then
+          if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
             echo "Installing docker-compose..."
             sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
           fi
 
           echo "Stopping and removing old containers..."
-          docker-compose -f docker-compose.prod.yml down || true
-
-          echo "Pulling latest images from Docker Hub..."
-          docker-compose -f docker-compose.prod.yml pull
-
-          echo "Starting services with latest images..."
-          docker-compose -f docker-compose.prod.yml up -d --remove-orphans
+          if command -v docker-compose &> /dev/null; then
+            docker-compose -f docker-compose.prod.yml down || true
+            docker-compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml up -d --remove-orphans
+          else
+            docker compose -f docker-compose.prod.yml down || true
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          fi
 
           echo "✅ EC2 deployment finished"
