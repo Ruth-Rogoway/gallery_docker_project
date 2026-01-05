@@ -163,9 +163,9 @@ jobs:
         trivy image --severity CRITICAL,HIGH --format sarif --output trivy-nginx-results.sarif "$NGINX_IMAGE"
 
         # Scan Database image
-        DB_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "gallery.*db|sqlite" | head -1)
+        DB_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "gallery.*database|sqlite" | head -1)
         if [ -z "$DB_IMAGE" ]; then
-          DB_IMAGE="gallery-db:latest"
+          DB_IMAGE="gallery_docker_project-database:latest"
         fi
         echo "Scanning Database image: $DB_IMAGE"
         trivy image --severity CRITICAL,HIGH --format sarif --output trivy-db-results.sarif "$DB_IMAGE"
