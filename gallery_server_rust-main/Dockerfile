@@ -1,5 +1,5 @@
 
-FROM rust:latest as builder
+FROM rust:1.75-slim as builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN cargo build --release
 # Runtime stage
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     && rm -rf /var/lib/apt/lists/*

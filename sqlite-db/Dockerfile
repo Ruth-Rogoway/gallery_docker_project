@@ -1,14 +1,10 @@
-FROM alpine:latest
+FROM alpine:3.19
 
-RUN apk add --no-cache sqlite
-
-# Create data directory
-RUN mkdir -p /data
-# Ensure /data is writable by anyone
-RUN chmod -R 777 /data
-
-# Create an empty database file to ensure it exists
-RUN touch /data/mydb.db
+# Install sqlite and create data directory with proper permissions
+RUN apk add --no-cache sqlite=3.44.2-r0 && \
+    mkdir -p /data && \
+    chmod -R 777 /data && \
+    touch /data/mydb.db
 
 # Set working directory
 WORKDIR /data
