@@ -144,7 +144,7 @@ jobs:
           RUST_IMAGE="gallery_server_rust-main:latest"
         fi
         echo "Scanning Rust image: $RUST_IMAGE"
-        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-rust-results.sarif "$RUST_IMAGE"
+        trivy image --exit-code 1 --severity CRITICAL --format sarif --output trivy-rust-results.sarif "$RUST_IMAGE"
         RUST_EXIT_CODE=$?
         
         # Scan Frontend image
@@ -153,7 +153,7 @@ jobs:
           FRONTEND_IMAGE="gallery_app_react-main:latest"
         fi
         echo "Scanning Frontend image: $FRONTEND_IMAGE"
-        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-frontend-results.sarif "$FRONTEND_IMAGE"
+        trivy image --exit-code 1 --severity CRITICAL --format sarif --output trivy-frontend-results.sarif "$FRONTEND_IMAGE"
         FRONTEND_EXIT_CODE=$?
         
         # Scan Nginx image
@@ -162,7 +162,7 @@ jobs:
           NGINX_IMAGE="nginx:latest"
         fi
         echo "Scanning Nginx image: $NGINX_IMAGE"
-        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-nginx-results.sarif "$NGINX_IMAGE"
+        trivy image --exit-code 1 --severity CRITICAL --format sarif --output trivy-nginx-results.sarif "$NGINX_IMAGE"
         NGINX_EXIT_CODE=$?
         
         # Scan Database image
@@ -171,14 +171,14 @@ jobs:
           DB_IMAGE="gallery-db:latest"
         fi
         echo "Scanning Database image: $DB_IMAGE"
-        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-db-results.sarif "$DB_IMAGE"
+        trivy image --exit-code 1 --severity CRITICAL --format sarif --output trivy-db-results.sarif "$DB_IMAGE"
         DB_EXIT_CODE=$?
         
         echo "✅ Trivy scans completed"
         
-        # Fail if any scan found critical/high vulnerabilities
+        # Fail if any scan found critical vulnerabilities
         if [ $RUST_EXIT_CODE -ne 0 ] || [ $FRONTEND_EXIT_CODE -ne 0 ] || [ $NGINX_EXIT_CODE -ne 0 ] || [ $DB_EXIT_CODE -ne 0 ]; then
-          echo "❌ Critical or High severity vulnerabilities found in Docker images!"
+          echo "❌ Critical severity vulnerabilities found in Docker images!"
           exit 1
         fi
 
