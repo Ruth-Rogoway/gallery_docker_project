@@ -27,16 +27,14 @@ jobs:
     
     # 1. Secret Scan - Gitleaks (Pre-Build)
     - name: Run Gitleaks Secret Scan
-      run: |
-        echo "🔍 Running Gitleaks secret scan..."
-        # Download and install Gitleaks
-        wget -q https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz
-        tar -xzf gitleaks_8.24.3_linux_x64.tar.gz
-        chmod +x gitleaks
-
-        # Run Gitleaks with custom config
-        ./gitleaks detect --config .gitleaks.toml --verbose --redact || (echo "❌ Secrets found!" && exit 1)
-        echo "✅ No secrets detected"
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        config-path: .gitleaks.toml
+        no-git: false
+        severity: high
+        fail: true
 
     # 2. Dockerfile Hardening - Hadolint (Pre-Build)
     - name: Run Hadolint Dockerfile Scan
@@ -75,18 +73,18 @@ jobs:
     - name: Run npm audit for Frontend Dependencies
       working-directory: ./gallery_app_react-main
       run: |
-        echo "🔧 Attempting to fix npm vulnerabilities..."
-        npm audit fix || echo "⚠️ Some vulnerabilities couldn't be auto-fixed"
-
         echo "🔍 Running npm audit for dependency vulnerabilities..."
-        echo "Note: Using info level to allow CI/CD to proceed while vulnerabilities are addressed"
-        npm audit --audit-level=info || (echo "ℹ️ Vulnerabilities found (info level), continuing with deployment..." && npm audit --audit-level=high --json | jq -r '.vulnerabilities | to_entries[] | select(.value.severity == "high") | "HIGH: \(.key): \(.value.title)"' 2>/dev/null || echo "No high vulnerabilities found")
-
-        echo "✅ npm audit completed (info level - allows deployment)"
+        npm audit --audit-level=high || (echo "❌ High/Critical vulnerabilities found!" && exit 1)
+        echo "✅ npm audit passed!"
 
     #- name: Set up Docker Buildx
     # uses: docker/setup-buildx-action@v3
     # with:
+
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
 
     # נבטל את כל שלבי ה-build הבודדים האלה
     # - name: Build database service
@@ -114,7 +112,7 @@ jobs:
     #     tags: gallery_docker_project_frontend:test
     #         #     
     - name: Build all services with Docker Compose
-      run: docker compose build
+      run: docker-compose build
 
     # ============================================
     # DevSecOps: Post-Build Security Scans
@@ -144,33 +142,43 @@ jobs:
           RUST_IMAGE="gallery_server_rust-main:latest"
         fi
         echo "Scanning Rust image: $RUST_IMAGE"
-        trivy image --severity CRITICAL,HIGH --format sarif --output trivy-rust-results.sarif "$RUST_IMAGE"
-
+        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-rust-results.sarif "$RUST_IMAGE"
+        RUST_EXIT_CODE=$?
+        
         # Scan Frontend image
         FRONTEND_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "gallery.*frontend|my-react-app|gallery_app" | head -1)
         if [ -z "$FRONTEND_IMAGE" ]; then
           FRONTEND_IMAGE="gallery_app_react-main:latest"
         fi
         echo "Scanning Frontend image: $FRONTEND_IMAGE"
-        trivy image --severity CRITICAL,HIGH --format sarif --output trivy-frontend-results.sarif "$FRONTEND_IMAGE"
-
+        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-frontend-results.sarif "$FRONTEND_IMAGE"
+        FRONTEND_EXIT_CODE=$?
+        
         # Scan Nginx image
         NGINX_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "gallery.*nginx" | head -1)
         if [ -z "$NGINX_IMAGE" ]; then
           NGINX_IMAGE="nginx:latest"
         fi
         echo "Scanning Nginx image: $NGINX_IMAGE"
-        trivy image --severity CRITICAL,HIGH --format sarif --output trivy-nginx-results.sarif "$NGINX_IMAGE"
-
+        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-nginx-results.sarif "$NGINX_IMAGE"
+        NGINX_EXIT_CODE=$?
+        
         # Scan Database image
-        DB_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "gallery.*database|sqlite" | head -1)
+        DB_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "gallery.*db|sqlite" | head -1)
         if [ -z "$DB_IMAGE" ]; then
-          DB_IMAGE="gallery_docker_project-database:latest"
+          DB_IMAGE="gallery-db:latest"
         fi
         echo "Scanning Database image: $DB_IMAGE"
-        trivy image --severity CRITICAL,HIGH --format sarif --output trivy-db-results.sarif "$DB_IMAGE"
-
-        echo "✅ Trivy scans completed (warnings logged but CI/CD continues)"
+        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-db-results.sarif "$DB_IMAGE"
+        DB_EXIT_CODE=$?
+        
+        echo "✅ Trivy scans completed"
+        
+        # Fail if any scan found critical/high vulnerabilities
+        if [ $RUST_EXIT_CODE -ne 0 ] || [ $FRONTEND_EXIT_CODE -ne 0 ] || [ $NGINX_EXIT_CODE -ne 0 ] || [ $DB_EXIT_CODE -ne 0 ]; then
+          echo "❌ Critical or High severity vulnerabilities found in Docker images!"
+          exit 1
+        fi
 
     - name: Upload Trivy scan results as artifacts
       uses: actions/upload-artifact@v4
@@ -181,7 +189,7 @@ jobs:
         retention-days: 30
 
     - name: Start services with Docker Compose
-      run: docker compose up -d
+      run: docker-compose up -d
 
     - name: Wait for initial container startup (briefly)
       run: sleep 5 # תן לקונטיינרים רגע לעלות לפני שננסה לבצע docker exec
@@ -256,7 +264,7 @@ jobs:
 
     - name: Stop services with Docker Compose (cleanup)
       if: always() # ירוץ תמיד, גם אם שלבים קודמים נכשלו
-      run: docker compose down
+      run: docker-compose down
 
 
   deploy:
@@ -380,17 +388,24 @@ jobs:
           echo "🚀 Connecting to EC2 and deploying latest images..."
 
           # נתיב הפרויקט על ה־EC2 – עדכני אם שונה
-          PROJECT_DIR="${{ secrets.EC2_PROJECT_DIR }}"
+          PROJECT_DIR="${{ secrets.EC2_PROJECT_DIR || '/home/ec2-user/gallery_docker_project' }}"
 
           cd "$PROJECT_DIR"
 
+          echo "Installing Docker Compose if needed..."
+          if ! command -v docker-compose &> /dev/null; then
+            echo "Installing docker-compose..."
+            sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+          fi
+
           echo "Stopping and removing old containers..."
-          docker compose -f docker-compose.prod.yml down || true
+          docker-compose -f docker-compose.prod.yml down || true
 
           echo "Pulling latest images from Docker Hub..."
-          docker compose -f docker-compose.prod.yml pull
+          docker-compose -f docker-compose.prod.yml pull
 
           echo "Starting services with latest images..."
-          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          docker-compose -f docker-compose.prod.yml up -d --remove-orphans
 
           echo "✅ EC2 deployment finished"
