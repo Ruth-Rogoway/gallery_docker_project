@@ -363,7 +363,7 @@ jobs:
   deploy_to_ec2:
     needs: deploy
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: false  # Disabled - EC2 deployment not configured
 
     steps:
     - name: Checkout code (for docker-compose.prod.yml)
