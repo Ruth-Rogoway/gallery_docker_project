@@ -76,6 +76,9 @@ jobs:
       working-directory: ./gallery_app_react-main
       run: |
         echo "🔍 Running npm audit for dependency vulnerabilities..."
+        echo "Attempting to fix vulnerabilities..."
+        npm audit fix --audit-level=moderate
+        echo "Checking for remaining high/critical vulnerabilities..."
         npm audit --audit-level=high || (echo "❌ High/Critical vulnerabilities found!" && exit 1)
         echo "✅ npm audit passed!"
 
