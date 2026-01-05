@@ -1,8 +1,8 @@
 .cart-page {
   padding: 40px 30px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
+  background: #f9f4ee;
+  font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #0b3b3b;
   direction: rtl;
   text-align: right;
   min-height: 100vh;
@@ -14,35 +14,32 @@
   align-items: center;
   margin-bottom: 50px;
   padding: 25px 30px;
-  background: rgba(255, 255, 255, 0.95);
+  background: #0b3b3b;
   backdrop-filter: blur(10px);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  box-shadow: 0 18px 45px rgba(6, 33, 37, 0.6);
+  border: none;
 }
 
 .cart-header h1 {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   margin: 0;
   font-size: 2.8em;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #ffffff;
 }
 
 .back-to-artworks-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #f7c7aa;
+  color: #0b3b3b;
   padding: 12px 24px;
   border: none;
-  border-radius: 12px;
+  border-radius: 999px;
   font-size: 1em;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   letter-spacing: 0.3px;
 }
 
@@ -58,7 +55,7 @@
 .empty-cart-message {
   text-align: center;
   font-size: 1.6em;
-  color: #718096;
+  color: #6e7a80;
   margin-top: 100px;
   padding: 40px;
   background: rgba(255, 255, 255, 0.8);
@@ -78,15 +75,15 @@
 }
 
 .cart-item-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   backdrop-filter: blur(10px);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border-radius: 24px;
+  box-shadow: 0 18px 45px rgba(6, 33, 37, 0.12);
   display: flex;
   align-items: center;
   padding: 25px;
   gap: 25px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(235, 222, 210, 0.9);
   transition: all 0.3s ease;
 }
 
@@ -118,10 +115,7 @@
 
 .cart-item-details h2 {
   font-size: 1.6em;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0b3b3b;
   margin: 0 0 8px 0;
   font-weight: 700;
 }
@@ -129,7 +123,7 @@
 .cart-item-details p {
   font-size: 1.05em;
   margin: 0 0 12px 0;
-  color: #4a5568;
+  color: #6e7a80;
 }
 
 .cart-item-details p strong {
@@ -138,16 +132,16 @@
 }
 
 .remove-from-cart-button {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: white;
+  background: #f7c7aa;
+  color: #0b3b3b;
   padding: 10px 20px;
   border: none;
-  border-radius: 10px;
+  border-radius: 999px;
   font-size: 0.95em;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(238, 90, 111, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   margin-top: 8px;
 }
 
@@ -157,40 +151,37 @@
 }
 
 .cart-summary {
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   backdrop-filter: blur(10px);
   padding: 35px;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border-radius: 24px;
+  box-shadow: 0 18px 45px rgba(6, 33, 37, 0.12);
   margin-top: 40px;
   text-align: center;
   max-width: 900px;
   margin: 40px auto 0 auto;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(235, 222, 210, 0.9);
 }
 
 .cart-summary h2 {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   font-size: 2.2em;
   margin-bottom: 25px;
-  font-weight: 800;
+  font-weight: 700;
+  color: #0b3b3b;
 }
 
 .checkout-button {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  color: white;
+  background: #0b3b3b;
+  color: #f7c7aa;
   padding: 18px 35px;
   border: none;
-  border-radius: 12px;
+  border-radius: 999px;
   font-size: 1.25em;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
-  box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   letter-spacing: 0.5px;
 }
 
@@ -220,7 +211,7 @@
 }
 
 .cart-modal-content {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #f9f4ee;
   padding: 30px;
   border-radius: 24px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);

@@ -2,7 +2,8 @@
 
 .App {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  /* Match body background for a seamless, soft canvas */
+  background: #fdf3e7;
 }
 
 .App-logo {
@@ -17,14 +18,9 @@
 }
 
 .App-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  /* Not used as a full-page hero anymore, but keep a neutral style in case */
+  background: #fdf3e7;
+  color: #5a4634;
 }
 
 .App-link {

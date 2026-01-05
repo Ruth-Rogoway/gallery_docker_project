@@ -21,6 +21,62 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    # ============================================
+    # DevSecOps: Pre-Build Security Scans
+    # ============================================
+    
+    # 1. Secret Scan - Gitleaks (Pre-Build)
+    - name: Run Gitleaks Secret Scan
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        config-path: .gitleaks.toml
+        no-git: false
+        severity: high
+        fail: true
+
+    # 2. Dockerfile Hardening - Hadolint (Pre-Build)
+    - name: Run Hadolint Dockerfile Scan
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: gallery_server_rust-main/Dockerfile
+        failure-threshold: error
+        ignore: DL3008,DL3009
+      continue-on-error: false
+
+    - name: Run Hadolint on Frontend Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: gallery_app_react-main/Dockerfile
+        failure-threshold: error
+        ignore: DL3008,DL3009
+      continue-on-error: false
+
+    - name: Run Hadolint on Nginx Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: nginx/Dockerfile
+        failure-threshold: error
+        ignore: DL3008,DL3009
+      continue-on-error: false
+
+    - name: Run Hadolint on Database Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: sqlite-db/Dockerfile
+        failure-threshold: error
+        ignore: DL3008,DL3009
+      continue-on-error: false
+
+    # 3. Dependency Scan - npm audit (Build)
+    - name: Run npm audit for Frontend Dependencies
+      working-directory: ./gallery_app_react-main
+      run: |
+        echo "🔍 Running npm audit for dependency vulnerabilities..."
+        npm audit --audit-level=high || (echo "❌ High/Critical vulnerabilities found!" && exit 1)
+        echo "✅ npm audit passed!"
+
     #- name: Set up Docker Buildx
     # uses: docker/setup-buildx-action@v3
     # with:
@@ -57,6 +113,80 @@ jobs:
     #         #     
     - name: Build all services with Docker Compose
       run: docker-compose build
+
+    # ============================================
+    # DevSecOps: Post-Build Security Scans
+    # ============================================
+    
+    # 4. Docker Image Scan - Trivy (Post-Build)
+    # Scan images after build by finding them via docker-compose service names
+    - name: Scan Docker Images with Trivy
+      run: |
+        echo "🔍 Scanning Docker images with Trivy..."
+        
+        # Install Trivy
+        sudo apt-get update
+        sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+        echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install -y trivy
+        
+        # Find and scan images
+        echo "📦 Finding built images..."
+        docker images
+        
+        # Scan Rust app image (from rust-app-1 service)
+        RUST_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "gallery.*rust|gallery_server" | head -1)
+        if [ -z "$RUST_IMAGE" ]; then
+          RUST_IMAGE="gallery_server_rust-main:latest"
+        fi
+        echo "Scanning Rust image: $RUST_IMAGE"
+        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-rust-results.sarif "$RUST_IMAGE"
+        RUST_EXIT_CODE=$?
+        
+        # Scan Frontend image
+        FRONTEND_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "gallery.*frontend|my-react-app|gallery_app" | head -1)
+        if [ -z "$FRONTEND_IMAGE" ]; then
+          FRONTEND_IMAGE="gallery_app_react-main:latest"
+        fi
+        echo "Scanning Frontend image: $FRONTEND_IMAGE"
+        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-frontend-results.sarif "$FRONTEND_IMAGE"
+        FRONTEND_EXIT_CODE=$?
+        
+        # Scan Nginx image
+        NGINX_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "gallery.*nginx" | head -1)
+        if [ -z "$NGINX_IMAGE" ]; then
+          NGINX_IMAGE="nginx:latest"
+        fi
+        echo "Scanning Nginx image: $NGINX_IMAGE"
+        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-nginx-results.sarif "$NGINX_IMAGE"
+        NGINX_EXIT_CODE=$?
+        
+        # Scan Database image
+        DB_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "gallery.*db|sqlite" | head -1)
+        if [ -z "$DB_IMAGE" ]; then
+          DB_IMAGE="gallery-db:latest"
+        fi
+        echo "Scanning Database image: $DB_IMAGE"
+        trivy image --exit-code 1 --severity CRITICAL,HIGH --format sarif --output trivy-db-results.sarif "$DB_IMAGE"
+        DB_EXIT_CODE=$?
+        
+        echo "✅ Trivy scans completed"
+        
+        # Fail if any scan found critical/high vulnerabilities
+        if [ $RUST_EXIT_CODE -ne 0 ] || [ $FRONTEND_EXIT_CODE -ne 0 ] || [ $NGINX_EXIT_CODE -ne 0 ] || [ $DB_EXIT_CODE -ne 0 ]; then
+          echo "❌ Critical or High severity vulnerabilities found in Docker images!"
+          exit 1
+        fi
+
+    - name: Upload Trivy scan results as artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: trivy-scan-results
+        path: trivy-*-results.sarif
+        retention-days: 30
 
     - name: Start services with Docker Compose
       run: docker-compose up -d
@@ -236,3 +366,39 @@ jobs:
         echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery_docker_project:latest"
         echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery_docker_project_nginx:latest"
         echo "- ${{ env.DOCKER_HUB_USERNAME }}/gallery_docker_project_frontend:latest"
+
+  deploy_to_ec2:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+    - name: Checkout code (for docker-compose.prod.yml)
+      uses: actions/checkout@v4
+
+    - name: Deploy to EC2 via SSH
+      uses: appleboy/ssh-action@v1.2.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: ${{ secrets.EC2_PORT || '22' }}
+        script: |
+          set -e
+          echo "🚀 Connecting to EC2 and deploying latest images..."
+
+          # נתיב הפרויקט על ה־EC2 – עדכני אם שונה
+          PROJECT_DIR="${{ secrets.EC2_PROJECT_DIR }}"
+
+          cd "$PROJECT_DIR"
+
+          echo "Stopping and removing old containers..."
+          docker compose -f docker-compose.prod.yml down || true
+
+          echo "Pulling latest images from Docker Hub..."
+          docker compose -f docker-compose.prod.yml pull
+
+          echo "Starting services with latest images..."
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+          echo "✅ EC2 deployment finished"
