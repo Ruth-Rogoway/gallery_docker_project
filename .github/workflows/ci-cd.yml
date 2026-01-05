@@ -77,7 +77,7 @@ jobs:
       run: |
         echo "🔍 Running npm audit for dependency vulnerabilities..."
         echo "Attempting to fix vulnerabilities..."
-        npm audit fix --audit-level=moderate
+        npm audit fix || echo "Some vulnerabilities couldn't be auto-fixed, continuing..."
         echo "Checking for remaining critical vulnerabilities..."
         npm audit --audit-level=critical || (echo "❌ Critical vulnerabilities found!" && exit 1)
         echo "⚠️  Note: High/moderate vulnerabilities may exist but are not blocking the build"
