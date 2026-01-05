@@ -2,108 +2,130 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* Ensure it takes full viewport height */
-  background-color: #f0f2f5;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  direction: rtl; /* For Hebrew */
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  direction: rtl;
+  padding: 20px;
 }
 
 .auth-container {
-  background-color: #ffffff;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 50px 40px;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   width: 100%;
-  max-width: 450px;
+  max-width: 480px;
   text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .auth-toggle {
   display: flex;
-  margin-bottom: 30px;
-  border-radius: 8px;
+  margin-bottom: 35px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #e0e0e0;
+  background: #f7fafc;
+  padding: 4px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .auth-toggle button {
   flex: 1;
-  padding: 12px 0;
+  padding: 14px 0;
   border: none;
-  background-color: #f8f8f8;
-  color: #555;
+  background: transparent;
+  color: #718096;
   font-size: 1.1em;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
 }
 
 .auth-toggle button.active {
-  background-color: #6a0dad; /* A distinct primary color */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 .auth-toggle button:not(.active):hover {
-  background-color: #e9ecef;
+  background: #edf2f7;
+  color: #4a5568;
 }
 
 .auth-form h2 {
-  color: #333;
-  font-size: 2em;
-  margin-bottom: 25px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2.2em;
+  margin-bottom: 30px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   text-align: right;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-weight: 600;
-  color: #444;
+  color: #4a5568;
+  font-size: 0.95em;
+  letter-spacing: 0.3px;
 }
 
 .form-group input {
   width: 100%;
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  padding: 14px 18px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
   font-size: 1em;
   box-sizing: border-box;
-  transition: border-color 0.3s ease;
-  direction: rtl; /* For Hebrew input */
+  transition: all 0.3s ease;
+  direction: rtl;
   text-align: right;
+  background: white;
+  font-family: 'Inter', sans-serif;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #6a0dad;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  transform: translateY(-2px);
 }
 
 .submit-button {
   width: 100%;
-  padding: 15px;
-  background-color: #6a0dad; /* Primary action color */
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 1.2em;
-  font-weight: bold;
+  border-radius: 12px;
+  font-size: 1.15em;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  margin-top: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 25px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  letter-spacing: 0.3px;
+  font-family: 'Inter', sans-serif;
 }
 
 .submit-button:hover {
-  background-color: #530a84;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
 }
 
 .submit-button:active {
-  transform: translateY(0);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 600px) {
