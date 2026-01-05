@@ -27,14 +27,16 @@ jobs:
     
     # 1. Secret Scan - Gitleaks (Pre-Build)
     - name: Run Gitleaks Secret Scan
-      uses: gitleaks/gitleaks-action@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        config-path: .gitleaks.toml
-        no-git: false
-        severity: high
-        fail: true
+      run: |
+        echo "🔍 Running Gitleaks secret scan..."
+        # Download and install Gitleaks
+        wget -q https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz
+        tar -xzf gitleaks_8.24.3_linux_x64.tar.gz
+        chmod +x gitleaks
+
+        # Run Gitleaks with custom config
+        ./gitleaks detect --config .gitleaks.toml --verbose --redact || (echo "❌ Secrets found!" && exit 1)
+        echo "✅ No secrets detected"
 
     # 2. Dockerfile Hardening - Hadolint (Pre-Build)
     - name: Run Hadolint Dockerfile Scan
@@ -392,22 +394,16 @@ jobs:
 
           cd "$PROJECT_DIR"
 
-          echo "Installing Docker Compose if needed..."
-          if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
-            echo "Installing docker-compose..."
-            sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-          fi
+          echo "Using Docker Compose..."
+          # Amazon Linux 2023 comes with docker compose (without dash) by default
 
           echo "Stopping and removing old containers..."
-          if command -v docker-compose &> /dev/null; then
-            docker-compose -f docker-compose.prod.yml down || true
-            docker-compose -f docker-compose.prod.yml pull
-            docker-compose -f docker-compose.prod.yml up -d --remove-orphans
-          else
-            docker compose -f docker-compose.prod.yml down || true
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
-          fi
+          docker compose -f docker-compose.prod.yml down || true
+
+          echo "Pulling latest images from Docker Hub..."
+          docker compose -f docker-compose.prod.yml pull
+
+          echo "Starting services with latest images..."
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
           echo "✅ EC2 deployment finished"
