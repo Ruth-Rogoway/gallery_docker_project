@@ -2,8 +2,8 @@
 
 .App {
   min-height: 100vh;
-  /* Match body background for a seamless, soft canvas */
-  background: #fdf3e7;
+  /* Transparent to show the cyan body background */
+  background: transparent;
 }
 
 .App-logo {
@@ -19,7 +19,7 @@
 
 .App-header {
   /* Not used as a full-page hero anymore, but keep a neutral style in case */
-  background: #fdf3e7;
+  background: transparent;
   color: #5a4634;
 }
 
@@ -58,7 +58,7 @@
 /* Admin Artworks Page Styles */
 .admin-artworks-page {
   padding: 40px 30px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: transparent;
   min-height: 100vh;
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   direction: rtl;
