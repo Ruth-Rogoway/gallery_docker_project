@@ -386,15 +386,15 @@ jobs:
           cd "$PROJECT_DIR"
 
           echo "Using Docker Compose..."
-          # Amazon Linux 2023 comes with docker compose (without dash) by default
+          # Using docker-compose (with dash) which is more compatible
 
           echo "Stopping and removing old containers..."
-          docker compose -f docker-compose.prod.yml down || true
+          docker-compose -f docker-compose.prod.yml down || true
 
           echo "Pulling latest images from Docker Hub..."
-          docker compose -f docker-compose.prod.yml pull
+          docker-compose -f docker-compose.prod.yml pull
 
           echo "Starting services with latest images..."
-          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          docker-compose -f docker-compose.prod.yml up -d --remove-orphans
 
           echo "✅ EC2 deployment finished"
