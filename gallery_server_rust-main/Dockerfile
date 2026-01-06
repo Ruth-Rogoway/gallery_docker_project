@@ -3,8 +3,8 @@ FROM rust:1.82-slim AS builder
 
 WORKDIR /app
 
-# Copy Cargo.toml and Cargo.lock
-COPY Cargo.toml Cargo.lock ./
+# Copy Cargo.toml (Cargo.lock will be generated if needed)
+COPY Cargo.toml ./
 
 # Copy source code
 COPY src ./src
