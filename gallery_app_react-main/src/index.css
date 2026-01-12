@@ -11,8 +11,8 @@ body {
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Light cyan background */
-  background: #00BFFF;
+  /* Red background */
+  background: #FF0000;
   min-height: 100vh;
 }
 
