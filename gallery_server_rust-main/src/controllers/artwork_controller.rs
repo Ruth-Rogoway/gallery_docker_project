@@ -14,6 +14,7 @@ pub async fn init_artwork_table(pool: &SqlitePool) -> Result<(), Error> {
             price REAL NOT NULL,
             id_artist TEXT NOT NULL,
             art_type TEXT NOT NULL,
+            image_url TEXT,
             FOREIGN KEY (id_artist) REFERENCES artists(artist_id) ON DELETE CASCADE
         );
         "#,
@@ -60,8 +61,8 @@ pub async fn create_artwork(pool: web::Data<SqlitePool>, mut artwork: web::Json<
     artwork.id_artwork = Some(id.clone());
     let result = sqlx::query(
         r#"
-        INSERT INTO artworks (id_artwork, title, description, year_created, price, id_artist, art_type)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO artworks (id_artwork, title, description, year_created, price, id_artist, art_type, image_url)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         "#
     )
     .bind(artwork.id_artwork.as_ref().unwrap())
@@ -71,6 +72,7 @@ pub async fn create_artwork(pool: web::Data<SqlitePool>, mut artwork: web::Json<
     .bind(&artwork.price)
     .bind(&artwork.id_artist)
     .bind(&artwork.art_type)
+    .bind(&artwork.image_url)
     .execute(&**pool)
     .await;
 
@@ -83,6 +85,7 @@ pub async fn create_artwork(pool: web::Data<SqlitePool>, mut artwork: web::Json<
             price: artwork.price,
             id_artist: artwork.id_artist.clone(),
             art_type: artwork.art_type.clone(),
+            image_url: artwork.image_url.clone(),
         }),
         Err(e) => {
             eprintln!("Failed to create artwork: {}", e);
@@ -96,7 +99,7 @@ pub async fn update_artwork(pool: web::Data<SqlitePool>, path: web::Path<String>
     let id_artwork = path.into_inner();
     let result = sqlx::query(
         r#"
-        UPDATE ARTWORKS SET title = ?, description = ?, year_created = ?, price = ?, id_artist = ?, art_type = ? WHERE id_artwork = ?
+        UPDATE ARTWORKS SET title = ?, description = ?, year_created = ?, price = ?, id_artist = ?, art_type = ?, image_url = ? WHERE id_artwork = ?
         "#
     )
     .bind(&artwork.title)
@@ -105,6 +108,7 @@ pub async fn update_artwork(pool: web::Data<SqlitePool>, path: web::Path<String>
     .bind(&artwork.price)
     .bind(&artwork.id_artist)
     .bind(&artwork.art_type)
+    .bind(&artwork.image_url)
     .bind(&id_artwork)
     .execute(&**pool)
     .await;

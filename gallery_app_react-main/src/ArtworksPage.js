@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getArtworks, getArtists } from './api';
+import Header from './components/Header';
+import ArtworkGrid from './components/ArtworkGrid';
 
 // Helper function to convert snake_case to camelCase
 const snakeToCamel = (obj) => {
@@ -24,26 +26,21 @@ const snakeToCamel = (obj) => {
 const ArtworksPage = ({ isAuthenticated, onShowAuth, onLogout, onAddToCart, cartItemCount, onShowCart, userName, checkoutTrigger, cartItems }) => {
   const [artworks, setArtworks] = useState([]);
   const [filteredArtworks, setFilteredArtworks] = useState([]);
-  const [artistFilter, setArtistFilter] = useState('');
   const [artTypeFilter, setArtTypeFilter] = useState('');
   const [minPriceFilter, setMinPriceFilter] = useState('');
   const [maxPriceFilter, setMaxPriceFilter] = useState('');
-  const [loading, setLoading] = useState(true); // New loading state
-  const [error, setError] = useState(null); // New error state
-  const [artistIdToNameMap, setArtistIdToNameMap] = useState({}); // New state for artist map
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [artistIdToNameMap, setArtistIdToNameMap] = useState({});
 
   // Fetch data from Rust server on component mount
   useEffect(() => {
-    console.log("ArtworksPage useEffect triggered. checkoutTrigger:", checkoutTrigger);
     const fetchInitialData = async () => {
-      console.log("fetchInitialData started.");
       try {
         const [artworksRawData, artistsRawData] = await Promise.all([
           getArtworks(),
           getArtists()
         ]);
-        console.log("Raw artworks data after fetch:", artworksRawData);
-        console.log("Raw artists data after fetch:", artistsRawData);
 
         // Process artists data
         const artistsCamelCase = artistsRawData.map(artist => snakeToCamel(artist));
@@ -53,7 +50,6 @@ const ArtworksPage = ({ isAuthenticated, onShowAuth, onLogout, onAddToCart, cart
           return map;
         }, {});
         setArtistIdToNameMap(artistMap);
-        console.log("Artist map created:", artistMap);
 
         // Process artworks data
         const processedArtworks = artworksRawData.map(artwork => {
@@ -64,31 +60,23 @@ const ArtworksPage = ({ isAuthenticated, onShowAuth, onLogout, onAddToCart, cart
             artistName: artistNameFromMap || 'Unknown Artist'
           };
         });
-        console.log("Processed artworks before setting state:", processedArtworks);
         setArtworks(processedArtworks);
         setFilteredArtworks(processedArtworks);
-        console.log("Artworks and filtered artworks state updated.");
       } catch (error) {
-        console.error("Error fetching initial data:", error);
-        setError("Failed to fetch artworks or artists. Please try again later.");
+        console.error("Error fetching data:", error);
+        setError(`Failed to fetch artworks or artists: ${error.message}. Please try again later.`);
       } finally {
         setLoading(false);
-        console.log("fetchInitialData finished. Loading set to false.");
       }
     };
 
     fetchInitialData();
-  }, [checkoutTrigger]); // Add checkoutTrigger to dependencies
+  }, [checkoutTrigger]);
 
   // Apply filters whenever filter states or artworks change
   useEffect(() => {
     let currentFiltered = artworks;
 
-    if (artistFilter) {
-      currentFiltered = currentFiltered.filter(artwork =>
-        artwork.artistName.toLowerCase().includes(artistFilter.toLowerCase())
-      );
-    }
 
     if (artTypeFilter) {
       currentFiltered = currentFiltered.filter(artwork =>
@@ -109,7 +97,7 @@ const ArtworksPage = ({ isAuthenticated, onShowAuth, onLogout, onAddToCart, cart
     }
 
     setFilteredArtworks(currentFiltered);
-  }, [artworks, artistFilter, artTypeFilter, minPriceFilter, maxPriceFilter]);
+  }, [artworks, artTypeFilter, minPriceFilter, maxPriceFilter]);
 
   // Extract unique art types for the dropdown
   const uniqueArtTypes = [...new Set(artworks.map(artwork => artwork.artType))];
@@ -119,7 +107,7 @@ const ArtworksPage = ({ isAuthenticated, onShowAuth, onLogout, onAddToCart, cart
       onShowAuth();
       alert('אנא התחבר או הירשם כדי להוסיף פריטים לסל.');
     } else {
-      onAddToCart(artwork); // Call the prop function to add to global cart
+      onAddToCart(artwork);
       alert(`הפריט "${artwork.title}" נוסף לסל בהצלחה!`);
     }
   };
@@ -129,109 +117,44 @@ const ArtworksPage = ({ isAuthenticated, onShowAuth, onLogout, onAddToCart, cart
   };
 
   return (
-    <div className="artworks-page">
-      <header className="artworks-header">
-        <h1>גלריית יצירות אומנות</h1>
-        <div className="header-buttons">
-          {isAuthenticated ? (
-            <>
-              <span>שלום, {userName}!</span>
-              <button onClick={onLogout} className="logout-button">התנתק</button>
-            </>
-          ) : (
-            <button onClick={onShowAuth} className="auth-button">התחברות / הרשמה</button>
-          )}
-          <button onClick={onShowCart} className="cart-icon-button">
-            🛒
-            {cartItemCount > 0 && <span className="cart-item-count">{cartItemCount}</span>}
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background">
+      <Header
+        artTypeFilter={artTypeFilter}
+        setArtTypeFilter={setArtTypeFilter}
+        minPriceFilter={minPriceFilter}
+        setMinPriceFilter={setMinPriceFilter}
+        maxPriceFilter={maxPriceFilter}
+        setMaxPriceFilter={setMaxPriceFilter}
+        cartItemCount={cartItemCount}
+        onShowCart={onShowCart}
+        isAuthenticated={isAuthenticated}
+        userName={userName}
+        onLogout={onLogout}
+        onShowAuth={onShowAuth}
+        uniqueArtTypes={uniqueArtTypes}
+      />
 
-      {loading && <p className="loading-message">טוען יצירות אומנות...</p>}
-      {error && <p className="error-message">{error}</p>}
-
-      {!loading && !error && (
-        <div className="filters-container">
-          <div className="filter-group">
-            <label htmlFor="artistFilter">סינון לפי אמן:</label>
-            <input
-              type="text"
-              id="artistFilter"
-              placeholder="הכנס שם אמן"
-              value={artistFilter}
-              onChange={(e) => setArtistFilter(e.target.value)}
-            />
+      {/* Main content - 3/4 of screen height */}
+      <main className="min-h-[75vh]">
+        {loading && (
+          <div className="flex items-center justify-center h-64">
+            <p className="text-muted-foreground text-lg">טוען יצירות אומנות...</p>
           </div>
-
-          <div className="filter-group">
-            <label htmlFor="artTypeFilter">סינון לפי סוג אומנות:</label>
-            <select
-              id="artTypeFilter"
-              value={artTypeFilter}
-              onChange={(e) => setArtTypeFilter(e.target.value)}
-            >
-              <option value="">כל הסוגים</option>
-              {uniqueArtTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group price-range">
-            <label>סינון לפי מחיר:</label>
-            <input
-              type="number"
-              id="minPriceFilter"
-              placeholder="מחיר ממינימלי"
-              value={minPriceFilter}
-              onChange={(e) => setMinPriceFilter(e.target.value)}
-            />
-            <span>-</span>
-            <input
-              type="number"
-              id="maxPriceFilter"
-              placeholder="מחיר מקסימלי"
-              value={maxPriceFilter}
-              onChange={(e) => setMaxPriceFilter(e.target.value)}
-            />
-          </div>
-        </div>
-      )}
-
-      <div className="artworks-list">
-        {loading ? (
-          <p>טוען יצירות אומנות...</p>
-        ) : error ? (
-          <p style={{ color: 'red' }}>{error}</p>
-        ) : filteredArtworks.length > 0 ? (
-          filteredArtworks.map((artwork) => {
-            const inCart = isArtworkInCart(artwork.idArtwork);
-            return (
-              <div key={artwork.idArtwork} className="artwork-card">
-                {artwork.imageUrl && <img src={artwork.imageUrl} alt={artwork.title} className="artwork-image" />}
-                <div className="artwork-details">
-                  <h2>{artwork.title}</h2>
-                  <p><strong>אמן:</strong> {artwork.artistName}</p>
-                  <p><strong>סוג:</strong> {artwork.artType}</p>
-                  <p><strong>שנה:</strong> {artwork.yearCreated}</p>
-                  <p><strong>תיאור:</strong> {artwork.description}</p>
-                  <p className="artwork-price"><strong>מחיר:</strong> ${artwork.price.toLocaleString()}</p>
-                  <button
-                    className="add-to-cart-button"
-                    onClick={() => handleAddToCart(artwork)}
-                    disabled={inCart}
-                  >
-                    {inCart ? 'בסל' : 'הוספה לסל'}
-                  </button>
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          <p>לא נמצאו יצירות אומנות התואמות לסינון.</p>
         )}
-      </div>
+        {error && (
+          <div className="flex items-center justify-center h-64">
+            <p className="text-destructive text-lg">{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <ArtworkGrid
+            artworks={filteredArtworks}
+            onAddToCart={handleAddToCart}
+            cartItems={cartItems}
+          />
+        )}
+      </main>
     </div>
   );
 };

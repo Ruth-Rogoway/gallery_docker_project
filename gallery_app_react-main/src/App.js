@@ -7,7 +7,6 @@ import CartPage from './CartPage'; // Import CartPage
 import LoginPage from './LoginPage'; // Import LoginPage
 import ThankYouModal from './ThankYouModal'; // Import ThankYouModal
 import './App.css';
-import './ArtworksPage.css';
 import './LoginPage.css';
 import './AuthModal.css';
 import './CartPage.css'; // Import CartPage CSS

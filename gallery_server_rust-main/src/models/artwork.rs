@@ -10,4 +10,5 @@ pub struct Artwork {
     pub price: f64,
     pub id_artist: String,
     pub art_type: String,
+    pub image_url: Option<String>,
 }
