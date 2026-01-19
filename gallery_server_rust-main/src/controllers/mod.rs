@@ -4,3 +4,5 @@ pub mod artist_controller;
 pub mod init_db;
 pub mod artwork_controller;
 pub mod order_controller;
+pub mod ai_controller;
+pub mod artist_communication_controller;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Sparkles } from 'lucide-react'; // Import Sparkles
 import { Button } from './ui/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
 import { Slider } from './ui/Slider';
@@ -17,7 +17,8 @@ const Header = ({
   userName,
   onLogout,
   onShowAuth,
-  uniqueArtTypes
+  uniqueArtTypes,
+  onToggleAISidebar // New prop for AI sidebar
 }) => {
   return (
     <header className="sticky top-0 z-50 h-[25vh] bg-header flex items-center px-4" dir="rtl">
@@ -73,6 +74,14 @@ const Header = ({
 
       {/* Left side - Cart & Auth (1/5 width) */}
       <div className="w-1/5 flex flex-col items-center gap-2">
+        {/* AI Generate Button */}
+        <button
+          onClick={onToggleAISidebar}
+          className="relative p-2 hover:bg-accent/50 rounded-full transition-colors"
+        >
+          <Sparkles className="w-6 h-6 text-header-foreground" />
+        </button>
+
         {/* Cart Icon */}
         <button
           onClick={onShowCart}

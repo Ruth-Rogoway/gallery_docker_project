@@ -1,0 +1,131 @@
+.send-to-artist-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* Above sidebar */
+}
+
+.send-to-artist-modal-content {
+    background-color: var(--background);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+}
+
+.send-to-artist-modal-content h2 {
+    color: var(--primary);
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.close-modal-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--foreground);
+    transition: color 0.2s;
+}
+
+.close-modal-button:hover {
+    color: var(--destructive);
+}
+
+.send-to-artist-modal-content .image-preview {
+    text-align: center;
+    margin-top: 10px;
+    border: 1px dashed var(--border);
+    padding: 10px;
+    border-radius: 8px;
+    background-color: var(--muted);
+}
+
+.send-to-artist-modal-content .image-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.send-to-artist-modal-content .image-preview h3 {
+    color: var(--foreground);
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.message-input-area label {
+    color: var(--foreground);
+    font-size: 1rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.message-input-area textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--input);
+    color: var(--foreground);
+    font-size: 0.95rem;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.message-input-area textarea::placeholder {
+    color: var(--muted-foreground);
+}
+
+.send-message-button {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: background-color 0.2s, opacity 0.2s;
+    width: 100%;
+}
+
+.send-message-button:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+}
+
+.send-message-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.success-message {
+    color: var(--green-success-foreground);
+    background-color: var(--green-success-background);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.error-message {
+    color: var(--destructive);
+    text-align: center;
+    font-weight: 500;
+}

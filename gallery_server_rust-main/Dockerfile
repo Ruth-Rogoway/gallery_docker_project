@@ -3,6 +3,13 @@ FROM rust:1.85-slim AS builder
 
 WORKDIR /app
 
+# Install build dependencies for OpenSSL
+# libssl-dev for OpenSSL headers and pkg-config for finding them
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy Cargo.toml (Cargo.lock will be generated if needed)
 COPY Cargo.toml ./
 
