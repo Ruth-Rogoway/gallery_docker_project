@@ -377,10 +377,9 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         port: ${{ secrets.EC2_PORT || '22' }}
-        env:
-          HF_API_KEY: ${{ secrets.HF_API_KEY }}
         script: |
           set -e
+          export HF_API_KEY=${{ secrets.HF_API_KEY }}
           echo "🚀 Connecting to EC2 and deploying latest images..."
 
           # נתיב הפרויקט על ה־EC2 – עדכני אם שונה
