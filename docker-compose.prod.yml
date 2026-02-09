@@ -10,9 +10,7 @@ services:
 
   backend:
     image: ${DOCKER_HUB_USERNAME:-ruthrogoway}/gallery_docker_project:latest
-    container_name: gallery-rust-app
-    deploy:
-      replicas: 2
+    container_name: backend
     environment:
       - DATABASE_URL=sqlite:/data/mydb.db
       - PORT=3007
