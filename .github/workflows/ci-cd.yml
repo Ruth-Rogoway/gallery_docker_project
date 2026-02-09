@@ -404,7 +404,7 @@ jobs:
           # Using docker-compose (with dash) which is more compatible
 
           echo "Stopping and removing old containers..."
-          docker-compose -f docker-compose.prod.yml down || true
+          docker-compose -f docker-compose.prod.yml down --volumes || true
 
           echo "Pulling latest images from Docker Hub..."
           docker-compose -f docker-compose.prod.yml pull
