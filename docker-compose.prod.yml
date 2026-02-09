@@ -8,30 +8,15 @@ services:
       - gallery-network
     restart: unless-stopped
 
-  rust-app-1:
+  backend: # Changed service name
     image: ${DOCKER_HUB_USERNAME:-ruthrogoway}/gallery_docker_project:latest
-    container_name: rust-app-1
-    ports:
-      - "3007:3007"
+    # container_name: rust-app-1 # Docker Compose will handle scaling and name instances
+    # We can define multiple instances for this service
+    deploy:
+      replicas: 2 # Docker Compose will create two instances named backend_1, backend_2
     environment:
       - DATABASE_URL=sqlite:/data/mydb.db
-      - PORT=3007
-    volumes:
-      - db_data:/data
-    depends_on:
-      - database
-    networks:
-      - gallery-network
-    restart: unless-stopped
-
-  rust-app-2:
-    image: ${DOCKER_HUB_USERNAME:-ruthrogoway}/gallery_docker_project:latest
-    container_name: rust-app-2
-    ports:
-      - "3008:3008"
-    environment:
-      - DATABASE_URL=sqlite:/data/mydb.db
-      - PORT=3008
+      - PORT=3007 # Nginx will handle port mapping
     volumes:
       - db_data:/data
     depends_on:
@@ -46,8 +31,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - rust-app-1
-      - rust-app-2
+      - backend # Changed dependency
     networks:
       - gallery-network
     restart: unless-stopped
@@ -72,4 +56,3 @@ volumes:
 networks:
   gallery-network:
     driver: bridge
-
