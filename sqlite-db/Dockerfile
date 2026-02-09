@@ -1,7 +1,7 @@
 FROM alpine:3.19
 
 # Install sqlite and create data directory with proper permissions
-RUN apk add --no-cache sqlite && \
+RUN apk add --no-cache sqlite=3.44.2-r1 && \
     mkdir -p /data && \
     chmod -R 777 /data && \
     touch /data/mydb.db
