@@ -367,8 +367,22 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
     steps:
-    - name: Checkout code (for docker-compose.prod.yml)
+    - name: Checkout code (for docker-compose.prod.yml and nginx configs)
       uses: actions/checkout@v4
+
+    # Define PROJECT_DIR early for SCP target
+    - name: Set PROJECT_DIR env variable
+      run: echo "PROJECT_DIR=${{ secrets.EC2_PROJECT_DIR || '/home/ec2-user/gallery_docker_project' }}" >> $GITHUB_ENV
+
+    - name: Transfer files to EC2
+      uses: appleboy/scp-action@v0.1.7 # Using a specific version for stability
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: ${{ secrets.EC2_PORT || '22' }}
+        source: "docker-compose.prod.yml,nginx"
+        target: "${{ env.PROJECT_DIR }}"
 
     - name: Deploy to EC2 via SSH
       uses: appleboy/ssh-action@v1.2.0
@@ -382,9 +396,8 @@ jobs:
           export HF_API_KEY=${{ secrets.HF_API_KEY }}
           echo "🚀 Connecting to EC2 and deploying latest images..."
 
-          # נתיב הפרויקט על ה־EC2 – עדכני אם שונה
           PROJECT_DIR="${{ secrets.EC2_PROJECT_DIR || '/home/ec2-user/gallery_docker_project' }}"
-
+          mkdir -p "$PROJECT_DIR" # Ensure the directory exists
           cd "$PROJECT_DIR"
 
           echo "Using Docker Compose..."
