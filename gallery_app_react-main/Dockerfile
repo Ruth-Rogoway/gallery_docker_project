@@ -11,7 +11,6 @@ RUN npm install --omit=dev
 
 # Copy source code
 COPY . .
-
 # Build the application
 RUN npm run build
 
