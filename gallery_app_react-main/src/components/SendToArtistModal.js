@@ -1,11 +1,23 @@
 import React, { useState } from 'react';
-import './SendToArtistModal.css'; // Create this CSS file next
+import './SendToArtistModal.css';
 
 const SendToArtistModal = ({ imageUrl, onClose }) => {
     const [message, setMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [sendError, setSendError] = useState('');
     const [sendSuccess, setSendSuccess] = useState(false);
+
+    const resetModalState = () => {
+        setMessage('');
+        setIsSending(false);
+        setSendError('');
+        setSendSuccess(false);
+    };
+
+    const handleClose = () => {
+        resetModalState();
+        onClose();
+    };
 
     const handleSendMessage = async () => {
         setIsSending(true);
@@ -46,7 +58,7 @@ const SendToArtistModal = ({ imageUrl, onClose }) => {
     return (
         <div className="send-to-artist-modal-overlay">
             <div className="send-to-artist-modal-content">
-                <button className="close-modal-button" onClick={onClose}>X</button>
+                <button className="close-modal-button" onClick={handleClose}>X</button>
                 <h2>Send Image to Artist</h2>
                 {imageUrl && (
                     <div className="image-preview">
