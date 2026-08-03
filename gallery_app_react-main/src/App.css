@@ -1,124 +1,84 @@
-/* App.css */
-
 .App {
   min-height: 100vh;
-  /* Transparent to show the cyan body background */
   background: transparent;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  /* Not used as a full-page hero anymore, but keep a neutral style in case */
-  background: transparent;
-  color: #5a4634;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Loading and error message styles */
-.loading-message, .error-message {
+.loading-message,
+.error-message {
   text-align: center;
-  padding: 30px;
-  font-size: 1.2em;
-  color: #555;
-  background: white;
-  border-radius: 12px;
+  padding: 28px;
+  font-size: 1.1rem;
+  color: hsl(200 8% 42%);
+  background: hsl(36 22% 97%);
+  border-radius: 4px;
   margin: 20px auto;
   max-width: 600px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid hsl(35 12% 82%);
+  font-family: 'Assistant', sans-serif;
 }
 
 .error-message {
-  color: #dc3545;
-  background: #fff5f5;
-  border-left: 4px solid #dc3545;
+  color: hsl(4 62% 42%);
+  border-color: hsl(4 40% 80%);
 }
 
-/* Admin Artworks Page Styles */
 .admin-artworks-page {
   padding: 40px 30px;
   background: transparent;
   min-height: 100vh;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Assistant', sans-serif;
   direction: rtl;
   text-align: right;
-  color: #333;
+  color: hsl(200 18% 14%);
 }
 
 .admin-artworks-page h1 {
   text-align: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 3em;
-  font-weight: 800;
-  margin-bottom: 50px;
-  letter-spacing: -0.5px;
+  font-family: 'Frank Ruhl Libre', serif;
+  color: hsl(200 18% 14%);
+  font-size: 2.4rem;
+  font-weight: 600;
+  margin-bottom: 40px;
+  letter-spacing: 0.04em;
 }
 
 .admin-artworks-page h2 {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 2em;
-  font-weight: 700;
-  margin-bottom: 25px;
+  font-family: 'Frank Ruhl Libre', serif;
+  color: hsl(95 12% 28%);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
 }
 
 .add-artwork-section,
-.edit-artwork-section {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  padding: 35px;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  margin-bottom: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+.edit-artwork-section,
+.artworks-management {
+  background: hsl(36 22% 97%);
+  padding: 28px;
+  border-radius: 4px;
+  border: 1px solid hsl(35 12% 82%);
+  margin-bottom: 28px;
 }
 
 .add-artwork-section form,
 .edit-artwork-section form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
 }
 
 .add-artwork-section input,
 .add-artwork-section textarea,
 .edit-artwork-section input,
 .edit-artwork-section textarea {
-  padding: 14px 18px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 1em;
-  font-family: 'Inter', sans-serif;
+  padding: 12px 14px;
+  border: 1px solid hsl(35 12% 78%);
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: 'Assistant', sans-serif;
   direction: rtl;
   text-align: right;
-  background: white;
-  transition: all 0.3s ease;
+  background: hsl(40 20% 99%);
 }
 
 .add-artwork-section input:focus,
@@ -126,65 +86,41 @@
 .edit-artwork-section input:focus,
 .edit-artwork-section textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  transform: translateY(-2px);
+  border-color: hsl(85 18% 42%);
+  box-shadow: 0 0 0 3px hsl(85 18% 42% / 0.16);
 }
 
 .add-artwork-section textarea,
 .edit-artwork-section textarea {
   grid-column: 1 / -1;
-  min-height: 120px;
+  min-height: 110px;
   resize: vertical;
 }
 
 .add-artwork-section button[type="submit"],
-.edit-artwork-section button[type="submit"] {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  color: white;
-  padding: 14px 28px;
+.edit-artwork-section button[type="submit"],
+.artworks-management button {
+  background: hsl(200 16% 22%);
+  color: hsl(40 20% 96%);
+  padding: 12px 22px;
   border: none;
-  border-radius: 12px;
-  font-size: 1.1em;
+  border-radius: 4px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
-  letter-spacing: 0.3px;
+  transition: background 0.2s ease;
+  font-family: 'Assistant', sans-serif;
 }
 
 .add-artwork-section button[type="submit"]:hover,
-.edit-artwork-section button[type="submit"]:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+.edit-artwork-section button[type="submit"]:hover,
+.artworks-management button:hover {
+  background: hsl(85 18% 36%);
 }
 
-.edit-artwork-section button[type="button"] {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: white;
-  padding: 14px 28px;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.1em;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(238, 90, 111, 0.3);
-  letter-spacing: 0.3px;
-}
-
-.edit-artwork-section button[type="button"]:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(238, 90, 111, 0.4);
-}
-
-.artworks-management {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  padding: 35px;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+.edit-artwork-section button[type="button"],
+.artworks-management button:last-of-type {
+  background: hsl(4 62% 48%);
 }
 
 .artworks-management ul {
@@ -194,46 +130,13 @@
 }
 
 .artworks-management li {
-  background: rgba(255, 255, 255, 0.8);
-  padding: 20px;
-  margin-bottom: 15px;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  background: hsl(40 18% 96%);
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  border: 1px solid hsl(35 12% 82%);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.3s ease;
-}
-
-.artworks-management li:hover {
-  transform: translateX(-5px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
-}
-
-.artworks-management button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.95em;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-right: 10px;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.artworks-management button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-}
-
-.artworks-management button:last-of-type {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  box-shadow: 0 4px 15px rgba(238, 90, 111, 0.3);
-}
-
-.artworks-management button:last-of-type:hover {
-  box-shadow: 0 6px 20px rgba(238, 90, 111, 0.4);
+  gap: 12px;
 }

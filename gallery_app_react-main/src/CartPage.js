@@ -42,7 +42,7 @@ const CartPage = ({ cartItems, onRemoveFromCart, onGoBack, onCheckoutSuccess }) 
               <div className="cart-item-details">
                 <h2>{item.title}</h2>
                 <p><strong>אמן:</strong> {item.artistName}</p>
-                <p><strong>מחיר:</strong> ${item.price.toLocaleString()}</p>
+                <p><strong>מחיר:</strong> ₪{item.price.toLocaleString()}</p>
                 <button onClick={() => onRemoveFromCart(item.idArtwork)} className="remove-from-cart-button">
                   הסר
                 </button>
@@ -50,7 +50,7 @@ const CartPage = ({ cartItems, onRemoveFromCart, onGoBack, onCheckoutSuccess }) 
             </div>
           ))}
           <div className="cart-summary">
-            <h2>סה"כ: ${calculateTotal().toLocaleString()}</h2>
+            <h2>סה"כ: ₪{calculateTotal().toLocaleString()}</h2>
             <button onClick={handleCheckout} className="checkout-button">לתשלום</button>
           </div>
         </div>

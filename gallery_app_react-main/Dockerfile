@@ -3,28 +3,25 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --omit=dev
+# Need devDependencies (tailwind/postcss) for the CRA production build
+RUN npm install --legacy-peer-deps
 
-# Copy source code
 COPY . .
-# Build the application
+
+# Baked into the JS bundle at build time (CRA)
+ARG REACT_APP_API_BASE_URL=http://localhost:8080
+ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL
+
 RUN npm run build
 
 # Production stage
 FROM nginx:alpine
 
-# Copy built application to nginx
 COPY --from=build /app/build /usr/share/nginx/html
-
-# Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
 EXPOSE 80
 
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]

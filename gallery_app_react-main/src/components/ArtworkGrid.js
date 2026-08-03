@@ -4,14 +4,18 @@ import ArtworkCard from './ArtworkCard';
 const ArtworkGrid = ({ artworks, onAddToCart, cartItems }) => {
   if (artworks.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground text-lg">לא נמצאו יצירות בקריטריונים שנבחרו</p>
+      <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
+        <p className="font-display text-2xl text-foreground/80 mb-2">אין תוצאות</p>
+        <p className="text-muted-foreground">לא נמצאו יצירות בקריטריונים שנבחרו</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6" dir="rtl">
+    <div
+      className="gallery-stagger grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto"
+      dir="rtl"
+    >
       {artworks.map((artwork) => (
         <ArtworkCard
           key={artwork.idArtwork}

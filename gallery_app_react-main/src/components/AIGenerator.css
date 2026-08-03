@@ -1,140 +1,165 @@
 .ai-generator-sidebar {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 380px; /* Adjust width as needed */
-    height: 100%;
-    background-color: rgba(240, 240, 240, 0.8); /* Light grey, 80% opaque */
-    border-left: 1px solid var(--border);
-    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
-    transform: translateX(0); /* Always visible when mounted */
-    transition: transform 0.3s ease-in-out;
-    z-index: 1000; /* Ensure it's above other content */
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    overflow-y: auto;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(400px, 100vw);
+  height: 100%;
+  background: hsl(36 22% 97%);
+  border-left: 1px solid hsl(35 12% 82%);
+  box-shadow: -12px 0 40px hsl(200 18% 14% / 0.12);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  overflow-y: auto;
+  animation: slideInSidebar 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  font-family: 'Assistant', sans-serif;
+  direction: rtl;
+}
+
+@keyframes slideInSidebar {
+  from {
+    transform: translateX(100%);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .ai-sidebar-close-button {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--foreground);
-    padding: 5px;
-    border-radius: 50%;
-    transition: background-color 0.2s;
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: hsl(38 12% 90%);
+  border: none;
+  cursor: pointer;
+  color: hsl(200 18% 14%);
+  padding: 8px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
 }
 
 .ai-sidebar-close-button:hover {
-    background-color: var(--accent);
+  background: hsl(200 16% 22%);
+  color: hsl(40 20% 96%);
 }
 
 .ai-generator-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    flex-grow: 1;
-    margin-top: 40px; /* Space for close button and header */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-grow: 1;
+  margin-top: 36px;
 }
 
 .ai-generator-content h2 {
-    color: var(--primary);
-    font-size: 1.8rem;
-    font-weight: bold;
-    margin-bottom: 15px;
-    text-align: center;
+  font-family: 'Frank Ruhl Libre', serif;
+  color: hsl(200 18% 14%);
+  font-size: 1.65rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  text-align: center;
+  letter-spacing: 0.04em;
 }
 
 .prompt-input-area {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .prompt-input-area textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background-color: var(--input);
-    color: var(--foreground);
-    font-size: 1rem;
-    resize: vertical;
-    min-height: 100px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid hsl(35 12% 78%);
+  border-radius: 4px;
+  background: hsl(40 20% 99%);
+  color: hsl(200 18% 14%);
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 110px;
+  font-family: 'Assistant', sans-serif;
+  box-sizing: border-box;
+}
+
+.prompt-input-area textarea:focus {
+  outline: none;
+  border-color: hsl(85 18% 42%);
+  box-shadow: 0 0 0 3px hsl(85 18% 42% / 0.16);
 }
 
 .prompt-input-area textarea::placeholder {
-    color: var(--muted-foreground);
+  color: hsl(200 8% 55%);
 }
 
 .ai-buttons-row {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 .ai-generator-content button {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: background-color 0.2s, opacity 0.2s;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background 0.2s ease, opacity 0.2s;
+  font-family: 'Assistant', sans-serif;
 }
 
 .ai-generator-content button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .ai-generator-content button:first-of-type {
-    background-color: var(--primary);
-    color: var(--primary-foreground);
+  background: hsl(200 16% 22%);
+  color: hsl(40 20% 96%);
 }
 
 .ai-generator-content button:first-of-type:hover:not(:disabled) {
-    background-color: var(--primary-hover);
+  background: hsl(85 18% 36%);
 }
 
 .send-to-artist-button {
-    background-color: var(--secondary) !important;
-    color: var(--secondary-foreground) !important;
+  background: hsl(38 12% 88%) !important;
+  color: hsl(200 16% 22%) !important;
 }
 
 .send-to-artist-button:hover:not(:disabled) {
-    background-color: var(--secondary-hover) !important;
+  background: hsl(35 12% 82%) !important;
 }
 
 .error-message {
-    color: var(--destructive);
-    text-align: center;
-    margin-top: 15px;
-    font-weight: 500;
+  color: hsl(4 62% 42%);
+  text-align: center;
+  margin-top: 12px;
+  font-weight: 500;
 }
 
 .image-preview-area {
-    margin-top: 20px;
-    text-align: center;
-    border: 1px dashed var(--border);
-    padding: 15px;
-    border-radius: 8px;
-    background-color: var(--muted);
+  margin-top: 12px;
+  text-align: center;
+  border: 1px dashed hsl(35 12% 78%);
+  padding: 14px;
+  border-radius: 4px;
+  background: hsl(38 12% 92%);
 }
 
 .image-preview-area h3 {
-    color: var(--foreground);
-    font-size: 1.2rem;
-    margin-bottom: 10px;
+  color: hsl(200 18% 14%);
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 1.1rem;
+  margin: 0 0 10px 0;
 }
 
 .image-preview-area img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  height: auto;
+  border-radius: 3px;
 }

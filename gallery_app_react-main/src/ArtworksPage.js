@@ -32,8 +32,7 @@ const ArtworksPage = ({ isAuthenticated, onShowAuth, onLogout, onAddToCart, cart
   const [maxPriceFilter, setMaxPriceFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [artistIdToNameMap, setArtistIdToNameMap] = useState({});
-  const [showAISidebar, setShowAISidebar] = useState(false); // New state for AI sidebar
+  const [showAISidebar, setShowAISidebar] = useState(false);
 
   // Fetch data from Rust server on component mount
   useEffect(() => {
@@ -51,7 +50,6 @@ const ArtworksPage = ({ isAuthenticated, onShowAuth, onLogout, onAddToCart, cart
           map[camelKey.artistId] = `${camelKey.firstName} ${camelKey.lastName}`;
           return map;
         }, {});
-        setArtistIdToNameMap(artistMap);
 
         // Process artworks data
         const processedArtworks = artworksRawData.map(artwork => {
@@ -114,17 +112,13 @@ const ArtworksPage = ({ isAuthenticated, onShowAuth, onLogout, onAddToCart, cart
     }
   };
 
-  const isArtworkInCart = (artworkId) => {
-    return cartItems.some(item => item.idArtwork === artworkId);
-  };
-
   const handleToggleAISidebar = () => {
     setShowAISidebar(prev => !prev);
   };
 
   return (
-    <div className={`min-h-screen bg-background flex ${showAISidebar ? 'overflow-hidden' : ''}`}> {/* Added flex and overflow-hidden when sidebar is open */}
-      <div className="flex-1 flex flex-col">
+    <div className={`min-h-screen flex ${showAISidebar ? 'overflow-hidden' : ''}`}>
+      <div className="flex-1 flex flex-col min-w-0">
         <Header
           artTypeFilter={artTypeFilter}
           setArtTypeFilter={setArtTypeFilter}
@@ -139,19 +133,27 @@ const ArtworksPage = ({ isAuthenticated, onShowAuth, onLogout, onAddToCart, cart
           onLogout={onLogout}
           onShowAuth={onShowAuth}
           uniqueArtTypes={uniqueArtTypes}
-          onToggleAISidebar={handleToggleAISidebar} // Pass toggle function
+          onToggleAISidebar={handleToggleAISidebar}
         />
 
-        {/* Main content - 3/4 of screen height */}
-        <main className="min-h-[75vh]">
+        <main className="flex-1 gallery-page-enter">
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 pb-2" dir="rtl">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl text-foreground m-0 inline-block">
+              האוסף
+            </h1>
+            <p className="text-muted-foreground mt-2 mb-0 max-w-xl text-balance text-base sm:text-lg">
+              יצירות מקוריות של אמנים שונים — בחרו, התאימו לסגנון שלכם, והזמינו ישירות מהגלריה.
+            </p>
+          </section>
+
           {loading && (
             <div className="flex items-center justify-center h-64">
               <p className="text-muted-foreground text-lg">טוען יצירות אומנות...</p>
             </div>
           )}
           {error && (
-            <div className="flex items-center justify-center h-64">
-              <p className="text-destructive text-lg">{error}</p>
+            <div className="flex items-center justify-center h-64 px-4">
+              <p className="text-destructive text-lg text-center">{error}</p>
             </div>
           )}
 
@@ -165,7 +167,6 @@ const ArtworksPage = ({ isAuthenticated, onShowAuth, onLogout, onAddToCart, cart
         </main>
       </div>
 
-      {/* AI Generator Sidebar */}
       {showAISidebar && (
         <AIGenerator onClose={handleToggleAISidebar} />
       )}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingCart, Sparkles } from 'lucide-react'; // Import Sparkles
+import { ShoppingCart, Sparkles, LogOut } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
 import { Slider } from './ui/Slider';
@@ -18,43 +18,96 @@ const Header = ({
   onLogout,
   onShowAuth,
   uniqueArtTypes,
-  onToggleAISidebar // New prop for AI sidebar
+  onToggleAISidebar
 }) => {
   return (
-    <header className="sticky top-0 z-50 h-[25vh] bg-header flex items-center px-4" dir="rtl">
-      {/* Right side - Logo placeholder (1/5 width) */}
-      <div className="w-1/5 flex items-center justify-center">
-        <div className="w-24 h-24 bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-muted-foreground/30">
-          <span className="text-muted-foreground text-xs text-center">לוגו</span>
-        </div>
-      </div>
+    <div className="sticky top-0 z-50" dir="rtl">
+      <header className="bg-header text-header-foreground border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+          <a href="/" className="group shrink-0 no-underline min-w-0 text-right">
+            <p className="font-display brand-mark text-[1.75rem] sm:text-3xl md:text-4xl text-header-foreground m-0 leading-none font-semibold">
+              רות ארט
+            </p>
+            <p className="font-body text-[0.7rem] sm:text-xs text-header-foreground/70 m-0 mt-1.5">
+              גלריית אומנות
+            </p>
+          </a>
 
-      {/* Center - Filters (3/5 width) */}
-      <div className="w-3/5 flex flex-col gap-4 px-8">
-        {/* Art Type Filter */}
-        <div className="flex items-center gap-4">
-          <span className="text-header-foreground font-medium min-w-20">סוג אומנות:</span>
-          <Select
-            value={artTypeFilter || 'all'}
-            onValueChange={(value) => setArtTypeFilter(value === 'all' ? '' : value)}
-          >
-            <SelectTrigger className="w-48 bg-background">
-              <SelectValue placeholder="כל הסוגים" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">כל הסוגים</SelectItem>
-              {uniqueArtTypes.map(type => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={onToggleAISidebar}
+              aria-label="מחולל AI"
+              className="p-2.5 rounded-md text-header-foreground/85 hover:text-header-foreground hover:bg-white/10 transition-colors duration-300"
+            >
+              <Sparkles className="w-5 h-5" />
+            </button>
 
-        {/* Price Range Filter */}
-        <div className="flex items-center gap-4">
-          <span className="text-header-foreground font-medium min-w-20">מחיר:</span>
-          <div className="flex items-center gap-4 flex-1">
-            <span className="text-header-foreground text-sm">₪{minPriceFilter || '0'}</span>
+            <button
+              type="button"
+              onClick={onShowCart}
+              aria-label="סל קניות"
+              className="relative p-2.5 rounded-md text-header-foreground/85 hover:text-header-foreground hover:bg-white/10 transition-colors duration-300"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-0.5 -left-0.5 bg-accent text-accent-foreground text-[10px] font-semibold w-5 h-5 flex items-center justify-center rounded-md">
+                  {cartItemCount}
+                </span>
+              )}
+            </button>
+
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2 sm:gap-3 mr-1">
+                <span className="hidden sm:inline text-sm text-header-foreground/80">
+                  שלום, {userName}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onLogout}
+                  className="bg-transparent border-header-foreground/25 text-header-foreground hover:bg-white/10 hover:text-header-foreground gap-1.5"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  התנתק
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={onShowAuth}
+                size="sm"
+                className="bg-[hsl(40_20%_96%)] text-[hsl(95_12%_22%)] hover:bg-white font-semibold"
+              >
+                התחברות
+              </Button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <div className="bg-card/80 backdrop-blur-md border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-8">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">סוג:</span>
+            <Select
+              value={artTypeFilter || 'all'}
+              onValueChange={(value) => setArtTypeFilter(value === 'all' ? '' : value)}
+            >
+              <SelectTrigger className="w-40 sm:w-48 bg-background border-border h-9">
+                <SelectValue placeholder="כל הסוגים" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">כל הסוגים</SelectItem>
+                {uniqueArtTypes.map(type => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">מחיר:</span>
+            <span className="text-xs text-foreground/70 tabular-nums">₪{minPriceFilter || '0'}</span>
             <Slider
               value={[parseFloat(minPriceFilter || '0'), parseFloat(maxPriceFilter || '3000')]}
               onValueChange={(value) => {
@@ -64,60 +117,13 @@ const Header = ({
               min={0}
               max={3000}
               step={50}
-              className="flex-1"
+              className="flex-1 max-w-md"
             />
-            <span className="text-header-foreground text-sm">₪{maxPriceFilter || '3000'}</span>
+            <span className="text-xs text-foreground/70 tabular-nums">₪{maxPriceFilter || '3000'}</span>
           </div>
         </div>
-
       </div>
-
-      {/* Left side - Cart & Auth (1/5 width) */}
-      <div className="w-1/5 flex flex-col items-center gap-2">
-        {/* AI Generate Button */}
-        <button
-          onClick={onToggleAISidebar}
-          className="relative p-2 hover:bg-accent/50 rounded-full transition-colors"
-        >
-          <Sparkles className="w-6 h-6 text-header-foreground" />
-        </button>
-
-        {/* Cart Icon */}
-        <button
-          onClick={onShowCart}
-          className="relative p-2 hover:bg-accent/50 rounded-full transition-colors"
-        >
-          <ShoppingCart className="w-6 h-6 text-header-foreground" />
-          {cartItemCount > 0 && (
-            <span className="absolute -top-1 -left-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              {cartItemCount}
-            </span>
-          )}
-        </button>
-
-        {/* Auth Section */}
-        {isAuthenticated ? (
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-header-foreground text-sm">שלום, {userName}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onLogout}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs"
-            >
-              התנתק
-            </Button>
-          </div>
-        ) : (
-          <Button
-            onClick={onShowAuth}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            התחברות / הרשמה
-          </Button>
-        )}
-      </div>
-    </header>
+    </div>
   );
 };
 

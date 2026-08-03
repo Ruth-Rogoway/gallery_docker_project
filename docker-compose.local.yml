@@ -1,0 +1,59 @@
+# Local run using pre-built images from Docker Hub
+# (avoids SSL/MITM issues when building Rust/npm inside Docker)
+services:
+  database:
+    image: ruthrogoway/gallery_docker_project_db:latest
+    container_name: gallery-db
+    volumes:
+      - db_data:/data
+    networks:
+      - gallery-network
+    restart: unless-stopped
+
+  backend:
+    image: ruthrogoway/gallery_docker_project:latest
+    container_name: backend
+    ports:
+      - "3007:3007"
+    environment:
+      - DATABASE_URL=sqlite:/data/mydb.db
+      - PORT=3007
+      - HOST=0.0.0.0
+    volumes:
+      - db_data:/data
+    depends_on:
+      - database
+    networks:
+      - gallery-network
+    restart: unless-stopped
+
+  nginx:
+    image: ruthrogoway/gallery_docker_project_nginx:latest
+    container_name: gallery-nginx
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    networks:
+      - gallery-network
+    restart: unless-stopped
+
+  frontend:
+    image: ruthrogoway/gallery_docker_project_frontend:latest
+    container_name: gallery-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - nginx
+      - backend
+    networks:
+      - gallery-network
+    restart: unless-stopped
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  gallery-network:
+    driver: bridge

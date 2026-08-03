@@ -1,57 +1,63 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 
 const ArtworkCard = ({ artwork, onAddToCart, isInCart }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div
-      className="bg-card rounded-lg overflow-hidden relative"
+    <article
+      className="artwork-mount bg-card overflow-hidden relative border border-border/70"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Image container - 3/4 height */}
-      <div className="relative aspect-square p-4">
+      <div className="relative aspect-[4/5] overflow-hidden bg-muted">
         <img
           src={artwork.imageUrl}
           alt={artwork.title}
-          className="w-full h-full object-cover rounded-md"
+          className={`w-full h-full object-cover transition-transform duration-700 ease-out ${
+            isHovered ? 'scale-[1.04]' : 'scale-100'
+          }`}
         />
 
-        {/* Hover overlay with description */}
-        {isHovered && (
-          <div className="absolute inset-4 bg-foreground/80 rounded-md flex items-center justify-center p-4 transition-opacity">
-            <p className="text-background text-center text-sm leading-relaxed">
-              {artwork.description}
-            </p>
-          </div>
-        )}
+        <div
+          className={`absolute inset-0 bg-gallery-ink/75 flex items-center justify-center p-6 transition-opacity duration-400 ${
+            isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+          style={{ backgroundColor: 'hsl(200 18% 14% / 0.78)' }}
+        >
+          <p className="text-header-foreground text-center text-sm leading-relaxed font-light">
+            {artwork.description}
+          </p>
+        </div>
       </div>
 
-      {/* Info section - 1/4 height */}
-      <div className="p-4 pt-2 flex justify-between items-end">
-        <div>
-          <h3 className="font-semibold text-card-foreground">{artwork.title}</h3>
-          <p className="text-muted-foreground text-sm">{artwork.artType}</p>
-          <p className="text-muted-foreground text-sm">{artwork.artistName}</p>
-          <p className="text-card-foreground font-bold mt-1">₪{artwork.price.toLocaleString()}</p>
+      <div className="p-4 sm:p-5 flex justify-between items-end gap-3">
+        <div className="min-w-0">
+          <h3 className="font-display text-lg text-card-foreground leading-snug truncate">
+            {artwork.title}
+          </h3>
+          <p className="text-muted-foreground text-sm mt-0.5 truncate">{artwork.artistName}</p>
+          <p className="text-muted-foreground/80 text-xs mt-0.5">{artwork.artType}</p>
+          <p className="text-card-foreground font-semibold mt-2 tabular-nums tracking-wide">
+            ₪{artwork.price.toLocaleString()}
+          </p>
         </div>
 
-        {/* Add to cart button */}
         <button
+          type="button"
           onClick={() => onAddToCart(artwork)}
           disabled={isInCart}
-          className={`p-2 rounded-md transition-colors flex items-center gap-1 text-sm ${
+          className={`shrink-0 px-3 py-2 rounded-md transition-all duration-300 flex items-center gap-1.5 text-sm font-medium ${
             isInCart
               ? 'bg-muted text-muted-foreground cursor-not-allowed'
-              : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90'
           }`}
         >
-          <Plus className="w-4 h-4" />
-          <span>{isInCart ? 'בסל' : 'הוסף לסל'}</span>
+          {isInCart ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          <span className="hidden sm:inline">{isInCart ? 'בסל' : 'הוסף'}</span>
         </button>
       </div>
-    </div>
+    </article>
   );
 };
 

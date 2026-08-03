@@ -58,7 +58,10 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./gallery_app_react-main
+    build:
+      context: ./gallery_app_react-main
+      args:
+        REACT_APP_API_BASE_URL: http://localhost:8080
     container_name: gallery-frontend
     ports:
       - "3000:80"
