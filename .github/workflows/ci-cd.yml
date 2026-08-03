@@ -196,8 +196,9 @@ jobs:
       run: |
         echo "Waiting for database and Rust app to start..."
         sleep 30 # זמן ההמתנה הראשוני
-        # Check if Rust app is responding
-        timeout 120 bash -c 'until curl -f http://localhost:3007/customers/; do sleep 2; done' || (echo "Service failed to start" && docker logs rust-app-1 && exit 1)
+        # First wait for the root health endpoint, then verify customers API
+        timeout 120 bash -c 'until curl -sf http://localhost:3007/ >/dev/null; do sleep 2; done' || (echo "Service failed to start" && docker ps -a && docker logs rust-app-1 && exit 1)
+        curl -sf http://localhost:3007/customers/ >/dev/null || (echo "Customers endpoint not ready" && docker logs rust-app-1 && exit 1)
     - name: Run database tests
       run: |
         echo "🧪 Running database integration tests..."

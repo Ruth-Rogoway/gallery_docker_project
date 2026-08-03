@@ -30,16 +30,15 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .app_data(web::Data::new(pool.clone()))
             .route("/", web::get().to(|| async { "Gallery API Server is running!" }))
-            .service(
-                web::scope("/api")
-                    .service(customer_routes())
-                    .service(artist_routes())
-                    .service(artworks_routes())
-                    .service(orders_routes())
-                    .service(artworks_in_order_routes())
-                    .configure(ai_routes_config)
-                    .configure(artist_communication_routes_config)
-            )
+            // Keep REST routes at the root so frontend + CI hit /customers, /artworks, etc.
+            // AI routes already include their own /api/... paths.
+            .service(customer_routes())
+            .service(artist_routes())
+            .service(artworks_routes())
+            .service(orders_routes())
+            .service(artworks_in_order_routes())
+            .configure(ai_routes_config)
+            .configure(artist_communication_routes_config)
     })
     .bind((host, port))?
     .run()
