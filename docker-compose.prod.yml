@@ -38,8 +38,6 @@ services:
     container_name: gallery-frontend
     ports:
       - "3000:80"
-    environment:
-      - REACT_APP_API_BASE_URL=http://16.171.218.167:8080
     depends_on:
       - nginx
     networks:

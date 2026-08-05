@@ -1,4 +1,16 @@
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3007';
+// In the browser on EC2/production, call the API on the same host at port 8080.
+// Locally, prefer an explicit env override, otherwise hit the Rust server on 3007.
+const resolveApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const { protocol, hostname } = window.location;
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `${protocol}//${hostname}:8080`;
+    }
+  }
+  return process.env.REACT_APP_API_BASE_URL || 'http://localhost:3007';
+};
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 export const getArtworks = async () => {
   const response = await fetch(`${API_BASE_URL}/artworks/`);
