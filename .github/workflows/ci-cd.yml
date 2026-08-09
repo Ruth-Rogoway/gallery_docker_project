@@ -84,36 +84,6 @@ jobs:
         echo "⚠️  Note: High/moderate vulnerabilities may exist but are not blocking the build"
         echo "✅ npm audit passed (no critical vulnerabilities)!"
 
-    #- name: Set up Docker Buildx
-    # uses: docker/setup-buildx-action@v3
-    # with:
-
-
-    # נבטל את כל שלבי ה-build הבודדים האלה
-    # - name: Build database service
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./sqlite-db
-    #     tags: gallery_docker_project_db:test
-    #         #         #
-    # - name: Build Rust app service
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./gallery_server_rust-main
-    #     tags: gallery-rust:test
-    #         #         #
-    # - name: Build Nginx service
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./nginx
-    #     tags: gallery_docker_project_nginx:test
-    #         #         #
-    # - name: Build Frontend service
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./gallery_app_react-main
-    #     tags: gallery_docker_project_frontend:test
-    #         #     
     - name: Build all services with Docker Compose
       run: docker compose build
 

@@ -6,16 +6,16 @@ This project contains a full-stack art gallery application with Docker container
 
 - **Frontend**: React application (Port 3000)
 - **Backend**: 2 Rust API servers with load balancing (Ports 3007, 3008)
-- **Database**: SQLite with persistent volume
-- **Load Balancer**: NGINX (Port 8080)
+- **Database**: SQLite with persistent volume (WAL mode for concurrent access)
+- **Load Balancer**: NGINX with `least_conn` (Port 8080)
 
 ## Services
 
 1. **database**: SQLite database container
-2. **rust-app-1**: First Rust backend server (Port 3007)
-3. **rust-app-2**: Second Rust backend server (Port 3008)
-4. **nginx**: Load balancer proxying to backend servers (Port 8080)
-5. **frontend**: React application served via NGINX (Port 3000)
+2. **rust-app-1** (`backend`): First Rust backend server (Port 3007)
+3. **rust-app-2** (`backend-2`): Second Rust backend server (Port 3008)
+4. **nginx**: Load balancer proxying API requests to both backends (Port 8080)
+5. **frontend**: React application (Port 3000)
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ This project contains a full-stack art gallery application with Docker container
 
 1. **Clone and navigate to the project directory**
    ```bash
-   cd gallery-main
+   cd gallery_docker_project-master
    ```
 
 2. **Build and start all services**
@@ -54,11 +54,11 @@ All API requests from the frontend are proxied through NGINX to the backend serv
 
 ## Database
 
-The SQLite database is stored in a Docker volume (`db_data`) and persists between container restarts. The database file is located at `/data/mydb.db` inside the database container.
+The SQLite database is stored in a Docker volume (`db_data`) and persists between container restarts. The database file is located at `/data/mydb.db` inside the database container. WAL mode is enabled to support concurrent reads/writes from both backend instances.
 
 ## Load Balancing
 
-NGINX distributes API requests between the two Rust backend servers using round-robin load balancing.
+NGINX distributes API requests between the two Rust backend servers using `least_conn` (sends each request to the server with the fewest active connections). If a backend fails 3 consecutive health checks, it is temporarily removed for 30 seconds (`max_fails=3 fail_timeout=30s`).
 
 ## Development
 
@@ -87,8 +87,10 @@ docker-compose up --build --force-recreate
 1. **Database connection issues**: Ensure the database container is healthy before starting backend services
 2. **Port conflicts**: Make sure ports 3000, 3007, 3008, 8080 are available
 3. **Build failures**: Check Docker and Docker Compose versions
+4. **Load balancing not working**: Verify both `rust-app-1` and `rust-app-2` are running (`docker ps`)
 
 ## Health Checks
 
 - Database health check: `sqlite3 /data/mydb.db "SELECT 1;"`
-- API health check: `GET http://localhost:8080/health`
+- Nginx health check: `GET http://localhost:8080/health`
+- Backend health check: `GET http://localhost:3007/` or `GET http://localhost:3008/`

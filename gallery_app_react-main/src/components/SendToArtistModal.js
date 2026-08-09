@@ -30,22 +30,6 @@ const SendToArtistModal = ({ imageUrl, onClose }) => {
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1500));
             setSendSuccess(true);
-            // In a real application, you would make a fetch/axios call here:
-            /*
-            const response = await fetch('/api/send-to-artist', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ imageUrl, message, customerInfo: 'user_email@example.com' }), // Add real customer info
-            });
-
-            if (!response.ok) {
-                const errorData = await response.text();
-                throw new Error(`Server error: ${response.status} - ${errorData}`);
-            }
-            setSendSuccess(true);
-            */
 
         } catch (err) {
             console.error('Failed to send message to artist:', err);

@@ -130,6 +130,8 @@ pub async fn init_db() -> Result<SqlitePool, sqlx::Error> {
     let pool = SqlitePool::connect(&database_url).await?;
 
     sqlx::query("PRAGMA foreign_keys = ON;").execute(&pool).await?;
+    sqlx::query("PRAGMA journal_mode = WAL;").execute(&pool).await?;
+    sqlx::query("PRAGMA busy_timeout = 5000;").execute(&pool).await?;
 
     customer_controller::init_customers_table(&pool).await?;
     artist_controller::init_artists_table(&pool).await?;

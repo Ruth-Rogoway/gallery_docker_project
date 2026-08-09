@@ -113,24 +113,3 @@ export const getArtists = async () => {
   console.log("Raw API response for getArtists:", data);
   return data;
 };
-
-// The checkoutArtworks function is no longer needed as we'll be deleting items individually.
-// export const checkoutArtworks = async (artworkIds) => {
-//   const queryParams = new URLSearchParams();
-//   artworkIds.forEach(id => queryParams.append('artwork_ids', id));
-
-//   const response = await fetch(`${API_BASE_URL}/artworks/bulk?${queryParams.toString()}`, {
-//     method: 'DELETE',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//     // DELETE requests typically do not have a body
-//     // body: JSON.stringify({ artwork_ids: artworkIds }),
-//   });
-//   if (!response.ok) {
-//     const errorText = await response.text();
-//     console.error(`Checkout API error: HTTP status ${response.status}, message: ${errorText}`);
-//     throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-//   }
-//   return response.json();
-// };

@@ -14,8 +14,26 @@ services:
     environment:
       - DATABASE_URL=sqlite:/data/mydb.db
       - PORT=3007
+      - HF_API_KEY=${HF_API_KEY}
     volumes:
       - db_data:/data
+      - ai_images:/app/ai_images
+    depends_on:
+      - database
+    networks:
+      - gallery-network
+    restart: unless-stopped
+
+  backend-2:
+    image: ${DOCKER_HUB_USERNAME:-ruthrogoway}/gallery_docker_project:latest
+    container_name: backend-2
+    environment:
+      - DATABASE_URL=sqlite:/data/mydb.db
+      - PORT=3008
+      - HF_API_KEY=${HF_API_KEY}
+    volumes:
+      - db_data:/data
+      - ai_images:/app/ai_images
     depends_on:
       - database
     networks:
@@ -29,8 +47,11 @@ services:
       - "8080:8080"
     depends_on:
       - backend
+      - backend-2
     networks:
       - gallery-network
+    volumes:
+      - ai_images:/usr/share/nginx/html/generated-images
     restart: unless-stopped
 
   frontend:
@@ -46,6 +67,8 @@ services:
 
 volumes:
   db_data:
+    driver: local
+  ai_images:
     driver: local
 
 networks:

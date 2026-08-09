@@ -38,3 +38,6 @@ logs/
 *.sqlite
 *.sqlite3
 
+# Rust vendored deps (local Docker builds with SSL issues)
+gallery_server_rust-main/vendor/
+gallery_server_rust-main/.cargo/

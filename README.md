@@ -13,15 +13,42 @@
 
 ## הרצת הפרויקט מקומית
 
-```bash
-# התקנת כל השירותים
-docker-compose up -d
+### אפשרות 1: ללא Docker (מהיר לפיתוח)
 
-# האפליקציה תהיה זמינה ב:
-# Frontend: http://localhost:3000
-# API: http://localhost:8080 (דרך nginx)
-# Direct API: http://localhost:3007 או 3008
+```powershell
+# טרמינל 1 — Backend
+cd gallery_server_rust-main
+$env:DATABASE_URL="sqlite:./mydb.db"
+$env:PORT="3007"
+.\target\release\app.exe
+
+# טרמינל 2 — Frontend
+cd gallery_app_react-main
+$env:REACT_APP_API_BASE_URL="http://localhost:3007"
+npm start
 ```
+
+או הרצה אוטומטית:
+
+```powershell
+.\run_local.ps1
+```
+
+- Frontend: http://localhost:3000
+- API ישיר: http://localhost:3007
+
+> **הערה:** load balancing (Nginx + 2 backends) דורש Docker — ראה אפשרות 2.
+
+### אפשרות 2: עם Docker (כולל load balancing)
+
+```bash
+# ודא ש-Docker Desktop פועל
+docker compose up -d --build
+```
+
+- Frontend: http://localhost:3000
+- API: http://localhost:8080 (דרך nginx, load balancing)
+- Direct API: http://localhost:3007 או http://localhost:3008
 
 ## CI/CD עם GitHub Actions
 

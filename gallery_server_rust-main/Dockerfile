@@ -8,15 +8,14 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     libssl-dev \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Cargo.toml (Cargo.lock will be generated if needed)
-COPY Cargo.toml ./
-
-# Copy source code
+# Copy manifest, lockfile, and source
+COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 
-# Build the application
+# Build the application (online; CI and most environments)
 RUN cargo build --release
 
 # Runtime stage
