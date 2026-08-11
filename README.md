@@ -50,6 +50,40 @@ docker compose up -d --build
 - API: http://localhost:8080 (דרך nginx, load balancing)
 - Direct API: http://localhost:3007 או http://localhost:3008
 
+## Rate Limiting (Nginx)
+
+כשהפרויקט רץ עם Docker, Nginx מגביל את כמות הבקשות ל-API לפי כתובת IP — כדי למנוע spam, brute force, ושימוש יתר ב-AI.
+
+ההגדרות נמצאות ב-`nginx/nginx.conf`.
+
+| נתיב | Limit | Burst | מטרה |
+|------|-------|-------|------|
+| API כללי (`/artworks/`, `/customers/`, וכו') | 30 req/דקה | 10 | הגנה כללית |
+| `/api/ai/` | 5 req/דקה | 2 | הגנה על קריאות Hugging Face |
+| `/customers/login` | 10 req/דקה | 3 | הגנה מ-brute force |
+
+**מה לא מוגבל:**
+- בקשות CORS preflight (`OPTIONS`) — לא נספרות
+- `/health` — health check
+- `/generated-images/` — קבצים סטטיים
+- Frontend (`/`) — דפי React
+
+**תגובה בחריגה:** `429 Too Many Requests`
+
+> **הערה:** בפיתוח מקומי ללא Docker (אפשרות 1), הבקשות עוברות ישירות ל-Rust על `:3007` — ללא rate limiting. ה-CI/CD גם רץ ישירות על `:3007` ולכן לא מושפע.
+
+### בדיקה
+
+```powershell
+# 6 בקשות AI מהירות — השישית אמורה להחזיר 429
+for ($i=1; $i -le 6; $i++) {
+  curl -s -o NUL -w "Request $i : %{http_code}`n" `
+    -X POST http://localhost:8080/api/ai/generate `
+    -H "Content-Type: application/json" `
+    -d '{"prompt":"test"}'
+}
+```
+
 ## CI/CD עם GitHub Actions
 
 הפרויקט כולל GitHub Actions workflow שבודק את הקוד ודוחף תמונות ל-Docker Hub.
@@ -108,3 +142,4 @@ docker compose up -d --build
 - **Containerization**: Docker + Docker Compose
 - **CI/CD**: GitHub Actions
 - **Load Balancing**: Nginx
+- **Rate Limiting**: Nginx (`limit_req`)
