@@ -24,13 +24,12 @@ const Header = ({
     <div className="sticky top-0 z-50" dir="rtl">
       <header className="bg-header text-header-foreground border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
-          <a href="/" className="group shrink-0 no-underline min-w-0 text-right">
-            <p className="font-display brand-mark text-[1.75rem] sm:text-3xl md:text-4xl text-header-foreground m-0 leading-none font-semibold">
-              רות ארט
-            </p>
-            <p className="font-body text-[0.7rem] sm:text-xs text-header-foreground/70 m-0 mt-1.5">
-              גלריית אומנות
-            </p>
+          <a href="/" className="group shrink-0 no-underline min-w-0">
+            <img
+              src={`${process.env.PUBLIC_URL}/logo.png`}
+              alt="NAAMA & RUTH Gallery"
+              className="brand-mark h-14 sm:h-16 md:h-[4.5rem] w-auto object-contain rounded-sm"
+            />
           </a>
 
           <div className="flex items-center gap-2 sm:gap-3">
