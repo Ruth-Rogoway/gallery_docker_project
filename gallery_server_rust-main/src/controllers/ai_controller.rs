@@ -37,19 +37,22 @@ async fn generate_image_ai(prompt: &str) -> Result<String, Box<dyn std::error::E
             return Err(Box::new(e));
         }
     };
-    // Hugging Face Inference API endpoint for a Stable Diffusion XL model
-    let url = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0";
+    // HF Inference no longer serves SDXL 1.0 (410 Gone). Use a current warm model.
+    let model_id = env::var("HF_IMAGE_MODEL")
+        .unwrap_or_else(|_| "stabilityai/stable-diffusion-3-medium-diffusers".to_string());
+    let url = format!(
+        "https://router.huggingface.co/hf-inference/models/{}",
+        model_id
+    );
     println!("Calling Hugging Face API URL: {}", url);
 
     let client = Client::new();
-    let response = client.post(url)
-        .header("Authorization", format!("Bearer {}", api_key)) // Hugging Face uses Bearer token
-        .header("Content-Type", "application/json") // Ensure JSON content type
+    let response = client
+        .post(&url)
+        .header("Authorization", format!("Bearer {}", api_key))
+        .header("Content-Type", "application/json")
         .json(&json!({
             "inputs": prompt,
-            "options": {
-                "wait_for_model": true // Wait if the model is loading
-            }
         }))
         .send()
         .await?;
